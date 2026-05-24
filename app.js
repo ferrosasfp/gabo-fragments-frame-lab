@@ -1082,9 +1082,9 @@ async function exportSlabGLB() {
     tex.needsUpdate = true;
     const mat = new THREE.MeshPhysicalMaterial({
       map: tex,
-      color: 0x1A1A1A,
-      metalness: 0.10,
-      roughness: 0.85,
+      color: 0xffffff,
+      metalness: 0.05,
+      roughness: 0.80,
       clearcoat: 0.0,
     });
     mesh = new THREE.Mesh(geom, mat);
