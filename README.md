@@ -36,7 +36,7 @@ Everything happens client-side — no server, no upload, no tracking, no AI call
   - `#1` – `#9` — Tier 1 (9 large fragments)
   - `#10` – `#90` — Tier 2 (81 medium fragments)
   - `#91` – `#990` — Tier 3 (900 micro fragments)
-- Marketplace: [OpenSea](https://opensea.io/collection/gabofragments)
+- Marketplace: [OpenSea](https://opensea.io/collection/gabo-fragments-society)
 
 ## Stack
 
