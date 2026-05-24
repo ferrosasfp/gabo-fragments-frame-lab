@@ -25,9 +25,10 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://api.opensea.io" crossorigin />
-    <link rel="preconnect" href="https://i.seadn.io" crossorigin />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://rpc.apechain.com" crossorigin />
+    <link rel="preconnect" href="https://ipfs.io" crossorigin />
+    <link rel="dns-prefetch" href="https://gateway.pinata.cloud" />
 
     <link
       href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
@@ -73,7 +74,7 @@
     <div class="page">
 
       <!-- =========================================================== -->
-      <!-- SPLIT HERO — tagline + tool side-by-side (above the fold)   -->
+      <!-- SPLIT HERO: tagline + tool side-by-side (above the fold)   -->
       <!-- =========================================================== -->
       <section class="split-hero hero" aria-label="Frame Lab">
 
@@ -95,7 +96,7 @@
                 type="text"
                 inputmode="numeric"
                 pattern="[0-9]*"
-                placeholder="0–990"
+                placeholder="0-990"
                 autocomplete="off"
                 maxlength="3"
               />
@@ -195,13 +196,13 @@
 
         <p class="hierarchy-caption">
           The original ceramic artwork was divided into three sizes of fragments. Genesis #0 is the photo
-          of the original piece. Tokens 1–9 are the 9 largest pieces. Tokens 10–90 are the 81 medium pieces.
-          Tokens 91–990 are the 900 smallest micro-fragments.
+          of the original piece. Tokens 1 to 9 are the 9 largest pieces. Tokens 10 to 90 are the 81 medium pieces.
+          Tokens 91 to 990 are the 900 smallest micro-fragments.
         </p>
       </section>
 
       <!-- =========================================================== -->
-      <!-- REASSEMBLE THE GENESIS — sliding puzzle                      -->
+      <!-- REASSEMBLE THE GENESIS: sliding puzzle                      -->
       <!-- =========================================================== -->
       <section class="puzzle-section" aria-label="Reassemble the Genesis puzzle">
         <div class="section-head">
@@ -213,7 +214,7 @@
           to put Genesis #0 back together.
         </p>
 
-        <!-- Difficulty selector — buttons injected by puzzle.js -->
+        <!-- Difficulty selector: buttons injected by puzzle.js -->
         <div class="puzzle-difficulty" id="puzzleDifficulty" role="group" aria-label="Difficulty"></div>
 
         <div class="puzzle-layout">
@@ -258,7 +259,7 @@
 
             <p class="puzzle-hint">
               Tap a tile next to the empty slot to slide it. Rebuild the grid to
-              reveal Genesis #0 — the whole from which all 991 fragments came.
+              reveal Genesis #0, the whole from which all 991 fragments came.
             </p>
           </div>
         </div>
