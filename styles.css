@@ -573,24 +573,43 @@ body {
   gap: 0;                                        /* tight grid for clean slicing */
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: var(--bone);                       /* default canvas — same as card bg */
+  position: relative;
+  background-color: var(--bone);
+  background-image: url('genesis-bg.webp');      /* full artwork visible everywhere */
+  background-size: cover;
+  background-position: center;
   border: 1px solid var(--line-strong);
   border-radius: 2px;
   overflow: hidden;
+}
+/* Cream wash heavily fades the artwork in the grid — default cells let
+   this faded version show through. Active cells (higher z-index) bypass
+   this overlay and render the artwork at full brightness. */
+.tier-card .grid-vis::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(245, 241, 232, 0.68);
+  z-index: 1;
+  pointer-events: none;
 }
 .tier-card.t1 .grid-vis { grid-template-columns: repeat(3, 1fr); }
 .tier-card.t2 .grid-vis { grid-template-columns: repeat(9, 1fr); }
 .tier-card.t3 .grid-vis { grid-template-columns: repeat(30, 1fr); }
 .tier-card .grid-vis span {
-  background-color: var(--bone);                 /* invisible — blends with grid */
+  position: relative;
+  z-index: 2;                                    /* above overlay, but transparent */
+  background-color: transparent;                 /* see faded artwork through */
   aspect-ratio: 1 / 1;
   transition: background-color 0.3s ease;
 }
-/* Active cells become "windows" showing their corresponding slice of the
-   Genesis artwork. bg-image + bg-size + bg-position set inline by JS per
-   cell, so each active cell shows EXACTLY its fragment of the original. */
+/* Active cells = window with FULL-brightness artwork slice. They sit
+   above the cream overlay, blocking it. Their bg-image is the same
+   genesis, sized + positioned per-cell so the slice aligns with the
+   grid's underlying faded artwork — creating a 'spotlight' effect. */
 .tier-card .grid-vis span.active {
-  background-color: transparent;
+  z-index: 3;
+  background-color: var(--bone);                 /* fallback while image paints */
   background-image: url('genesis-bg.webp');
   background-repeat: no-repeat;
 }
