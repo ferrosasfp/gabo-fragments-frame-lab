@@ -30,11 +30,11 @@ const GABO_FRAGMENTS = {
   openseaApi: "https://api.opensea.io/api/v2",
   rpc: "https://rpc.apechain.com/http",
   gateways: [
+    // Only direct-serve gateways with CORS. dweb.link, nftstorage.link, w3s.link
+    // redirect to {CID}.ipfs.subdomain which breaks crossOrigin="anonymous" used
+    // by canvas/three.js — the browser can't trust the redirect for CORS.
     "https://ipfs.io/ipfs",
     "https://gateway.pinata.cloud/ipfs",
-    "https://dweb.link/ipfs",
-    "https://nftstorage.link/ipfs",
-    "https://w3s.link/ipfs",
   ],
 };
 
