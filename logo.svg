@@ -1,0 +1,59 @@
+<svg width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gabo Fragments Society">
+  <defs>
+    <clipPath id="gabo-clip">
+      <circle cx="110" cy="110" r="106"/>
+    </clipPath>
+    <linearGradient id="gabo-gold" x1="0" y1="0" x2="220" y2="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e2b855"/>
+      <stop offset="0.5" stop-color="#c89b3c"/>
+      <stop offset="1" stop-color="#8a6d29"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ceramic tile body -->
+  <g clip-path="url(#gabo-clip)">
+    <rect width="220" height="220" fill="#faf7f0"/>
+
+    <!-- Subtle azulejo border tile motif -->
+    <g stroke="#1e4a8c" stroke-width="1.6" fill="none" opacity="0.45">
+      <circle cx="110" cy="110" r="98"/>
+      <circle cx="110" cy="110" r="92" stroke-dasharray="3 4"/>
+    </g>
+
+    <!-- 9-fragment grid in faint cobalt (the Gabo "fragments" motif) -->
+    <g stroke="#1e4a8c" stroke-width="0.9" opacity="0.32">
+      <line x1="46" y1="80" x2="174" y2="80"/>
+      <line x1="46" y1="140" x2="174" y2="140"/>
+      <line x1="78" y1="48" x2="78" y2="172"/>
+      <line x1="142" y1="48" x2="142" y2="172"/>
+    </g>
+
+    <!-- Decorative azulejo corner flourishes -->
+    <g fill="#1e4a8c" opacity="0.7">
+      <path d="M58 58 Q66 50 74 58 Q66 66 58 58z"/>
+      <path d="M162 58 Q154 50 146 58 Q154 66 162 58z"/>
+      <path d="M58 162 Q66 154 74 162 Q66 170 58 162z"/>
+      <path d="M162 162 Q154 154 146 162 Q154 170 162 162z"/>
+    </g>
+
+    <!-- G monogram — central, classical serif, in cobalt blue -->
+    <g transform="translate(110, 122)">
+      <!-- Soft gold halo -->
+      <circle cx="0" cy="-10" r="46" fill="url(#gabo-gold)" opacity="0.18"/>
+      <text x="0" y="0" text-anchor="middle" font-family="'Cormorant Garamond', 'Playfair Display', Georgia, serif"
+            font-size="116" font-weight="700" fill="#102d5a"
+            letter-spacing="-2">G</text>
+      <!-- Fragment slash through the G — terracotta accent -->
+      <line x1="-30" y1="-26" x2="30" y2="-2" stroke="#b85c3d" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/>
+    </g>
+
+    <!-- Bottom legend, faint, ceramic-style -->
+    <text x="110" y="196" text-anchor="middle"
+          font-family="'Cinzel', 'Cormorant Garamond', serif"
+          font-size="9" letter-spacing="3" fill="#1a3050" opacity="0.8">FRAGMENTS</text>
+  </g>
+
+  <!-- Outer ring (ceramic edge) -->
+  <circle cx="110" cy="110" r="106" fill="none" stroke="#1e4a8c" stroke-width="3"/>
+  <circle cx="110" cy="110" r="103" fill="none" stroke="#c89b3c" stroke-width="1" opacity="0.6"/>
+</svg>
