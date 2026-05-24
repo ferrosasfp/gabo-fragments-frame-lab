@@ -201,6 +201,70 @@
       </section>
 
       <!-- =========================================================== -->
+      <!-- REASSEMBLE THE GENESIS — sliding puzzle                      -->
+      <!-- =========================================================== -->
+      <section class="puzzle-section" aria-label="Reassemble the Genesis puzzle">
+        <div class="section-head">
+          <p class="section-eyebrow">Interactive Puzzle</p>
+          <h2 class="section-title">Reassemble the Genesis</h2>
+        </div>
+        <p class="puzzle-sub">
+          The original artwork was shattered into 991 fragments. Slide the tiles
+          to put Genesis #0 back together.
+        </p>
+
+        <!-- Difficulty selector — buttons injected by puzzle.js -->
+        <div class="puzzle-difficulty" id="puzzleDifficulty" role="group" aria-label="Difficulty"></div>
+
+        <div class="puzzle-layout">
+          <!-- Board: relative container, tiles absolutely positioned + animated -->
+          <div class="puzzle-board-wrap">
+            <div class="puzzle-board" id="puzzleBoard" aria-label="Sliding puzzle board"></div>
+
+            <!-- Win overlay (cream panel over the board) -->
+            <div class="puzzle-win" id="puzzleWin" role="status" aria-live="polite">
+              <div class="puzzle-win-panel">
+                <p class="puzzle-win-title">✓ Reassembled!</p>
+                <p class="puzzle-win-stats">
+                  <span><span id="puzzleWinMoves">0</span> moves</span>
+                  <span class="dot">·</span>
+                  <span id="puzzleWinTime">0:00</span>
+                </p>
+                <div class="puzzle-win-actions">
+                  <button type="button" class="puzzle-btn puzzle-btn-share" id="puzzleShare">Share on X</button>
+                  <button type="button" class="puzzle-btn puzzle-btn-ghost" id="puzzlePlayAgain">Play Again</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats + controls -->
+          <div class="puzzle-side">
+            <div class="puzzle-stats" aria-live="polite">
+              <div class="puzzle-stat">
+                <span class="puzzle-stat-label">⏱ Time</span>
+                <span class="puzzle-stat-value mono" id="puzzleTime">0:00</span>
+              </div>
+              <div class="puzzle-stat">
+                <span class="puzzle-stat-label">Moves</span>
+                <span class="puzzle-stat-value mono" id="puzzleMoves">0</span>
+              </div>
+            </div>
+
+            <div class="puzzle-controls">
+              <button type="button" class="puzzle-btn puzzle-btn-primary" id="puzzleShuffle">Shuffle</button>
+              <button type="button" class="puzzle-btn puzzle-btn-toggle" id="puzzleReference" aria-pressed="false">Show Reference</button>
+            </div>
+
+            <p class="puzzle-hint">
+              Tap a tile next to the empty slot to slide it. Rebuild the grid to
+              reveal Genesis #0 — the whole from which all 991 fragments came.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================== -->
       <!-- FROM LISBON TO THE CHAIN                                     -->
       <!-- =========================================================== -->
       <section class="timeline-section" aria-label="Origin story">
@@ -317,5 +381,6 @@
     </footer>
 
     <script type="module" src="app.js"></script>
+    <script type="module" src="puzzle.js"></script>
   </body>
 </html>

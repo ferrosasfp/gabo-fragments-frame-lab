@@ -28,6 +28,7 @@ console.log('\n[1] File presence + minimum size');
 const files = [
   { path: 'index.html', min: 5_000 },
   { path: 'app.js',     min: 30_000 },
+  { path: 'puzzle.js',  min: 4_000 },
   { path: 'styles.css', min: 8_000 },
   { path: 'logo.svg',   min: 600 },
   { path: 'serve.py',   min: 200 },
@@ -76,6 +77,21 @@ const htmlChecks = [
   { name: 'Tier 1 label "9" + "Large Fragments"', re: /class="num">9<[\s\S]*Large Fragments/ },
   { name: 'Tier 2 label "81" + "Medium Fragments"', re: /class="num">81<[\s\S]*Medium Fragments/ },
   { name: 'Tier 3 label "900" + "Micro Fragments"', re: /class="num">900<[\s\S]*Micro Fragments/ },
+  // Reassemble the Genesis — sliding puzzle
+  { name: 'PUZZLE section present', re: /class="puzzle-section"/ },
+  { name: 'PUZZLE eyebrow "Interactive Puzzle"', re: /Interactive Puzzle/i },
+  { name: 'PUZZLE heading "Reassemble the Genesis"', re: /Reassemble the Genesis/ },
+  { name: 'PUZZLE difficulty container', re: /id="puzzleDifficulty"/ },
+  { name: 'PUZZLE board element', re: /id="puzzleBoard"/ },
+  { name: 'PUZZLE timer stat', re: /id="puzzleTime"/ },
+  { name: 'PUZZLE moves stat', re: /id="puzzleMoves"/ },
+  { name: 'PUZZLE shuffle button', re: /id="puzzleShuffle"/ },
+  { name: 'PUZZLE show-reference toggle', re: /id="puzzleReference"/ },
+  { name: 'PUZZLE win overlay', re: /id="puzzleWin"/ },
+  { name: 'PUZZLE share button', re: /id="puzzleShare"/ },
+  { name: 'PUZZLE placed before timeline', re: /puzzle-section[\s\S]*From Lisbon to the Chain/ },
+  { name: 'PUZZLE placed after hierarchy', re: /991 Fragments\.\s*1 Artwork\.[\s\S]*puzzle-section/ },
+  { name: 'loads puzzle.js module', re: /<script type="module" src="puzzle\.js"/ },
   // Timeline — From Lisbon to the Chain (verbatim)
   { name: 'Timeline heading "From Lisbon to the Chain"', re: /From Lisbon to the Chain/i },
   { name: 'Timeline step 1 title "Ape Fest Lisbon"', re: /Ape Fest Lisbon/i },
@@ -130,6 +146,10 @@ const cssChecks = [
   { name: '.hierarchy fragment hierarchy styling', re: /\.hierarchy\s*\{/ },
   { name: '.timeline-section styling', re: /\.timeline-section\s*\{/ },
   { name: '.timeline-step card styling', re: /\.timeline-step\s*\{/ },
+  { name: '.puzzle-section styling', re: /\.puzzle-section\s*\{/ },
+  { name: '.puzzle-board styling', re: /\.puzzle-board\s*\{/ },
+  { name: '.puzzle-tile styling', re: /\.puzzle-tile\s*\{/ },
+  { name: 'puzzle tiles use transform transition (slide)', re: /\.puzzle-tile[\s\S]*transition:[^;]*transform/ },
   { name: '.footer-cols structured footer', re: /\.footer-cols\s*\{/ },
   // Negative — silver/azulejo/serif palette must be gone
   { name: 'no --silver variables', re: /--silver/, negate: true },
@@ -232,6 +252,29 @@ const logo = readFileSync(resolve(ROOT, 'logo.svg'), 'utf8');
 /<\/svg>/.test(logo) ? pass('logo.svg closes <svg>') : fail('logo.svg closes <svg>');
 /GFS/.test(logo) ? pass('logo.svg includes GFS monogram') : fail('logo.svg includes GFS monogram');
 /#1E3A6E/i.test(logo) ? pass('logo.svg uses cobalt #1E3A6E') : fail('logo.svg uses cobalt #1E3A6E');
+
+console.log('\n[7] puzzle.js — sliding puzzle engine');
+const puzzle = readFileSync(resolve(ROOT, 'puzzle.js'), 'utf8');
+const puzzleChecks = [
+  { name: 'reuses genesis-bg.webp', re: /genesis-bg\.webp/ },
+  { name: 'three difficulties (3/4/5)', re: /n:\s*3[\s\S]*n:\s*4[\s\S]*n:\s*5/ },
+  { name: 'SlidingPuzzle class', re: /class SlidingPuzzle/ },
+  { name: 'solvable shuffle via valid moves (SHUFFLE_MOVES)', re: /SHUFFLE_MOVES/ },
+  { name: 'shuffle in 150-300 range', re: /SHUFFLE_MOVES\s*=\s*(1[5-9]\d|2\d\d|300)\b/ },
+  { name: 'shuffle avoids undoing previous move', re: /prevEmpty/ },
+  { name: 'win detection (isSolvedState)', re: /isSolvedState/ },
+  { name: 'timer M:SS formatter', re: /padStart\(2,\s*["']0["']\)/ },
+  { name: 'X intent share URL', re: /twitter\.com\/intent\/tweet/ },
+  { name: 'share text @thegaboeth Genesis #0', re: /@thegaboeth's Genesis #0/ },
+  { name: 'share opens new tab', re: /window\.open\([^)]*_blank/ },
+  { name: 'slicing technique (background-size n*100%)', re: /backgroundSize\s*=\s*`\$\{this\.n\s*\*\s*100\}%/ },
+  { name: 'no raw permutation shuffle (no Array.sort random)', re: /sort\(\(\)\s*=>\s*Math\.random/, negate: true },
+];
+for (const c of puzzleChecks) {
+  const hit = c.re.test(puzzle);
+  const ok = c.negate ? !hit : hit;
+  ok ? pass(c.name) : fail(c.name);
+}
 
 // ===== Summary =====
 const ok = results.filter((r) => r.ok).length;
