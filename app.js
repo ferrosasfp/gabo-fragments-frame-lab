@@ -1,8 +1,8 @@
-/* Gabo Fragments Frame Lab — community gallery-frame renderer
+/* Gabo Fragments Frame Lab — community gallery-card renderer
  *
- * Three.js renders a polished silver gallery frame with the Gabo Fragments
- * artwork inset, and a silver plaque below engraved with token info + fragment
- * tier. The same scene drives:
+ * Three.js renders a modern gallery card with the Gabo Fragments artwork
+ * inset and a plaque below printed with token info + fragment tier.
+ * The same scene drives:
  *   - the live on-screen preview (looping rotation)
  *   - Frame PNG  (one frame, hi-res, at a flattering angle)
  *   - Frame GIF  (frames around a full rotation)
@@ -45,6 +45,18 @@ const GIFJS_WORKER = "https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.worker.
 const GIFJS_SRI        = "sha384-4RMW82CWFobXY+HRHXe5go/V5acBhiIVGCT+2k7TEoxi7AiWKw8WoWb9qMU+FAFu";
 const GIFJS_WORKER_SRI = "sha384-uL0SwIQSos1DfQU2KzlDbPuSz7Jwo+hmNPIhe86VJ+MWwyj0DvjngnAgWrkNi9eQ";
 
+// GFS palette in canvas-friendly hex strings
+const COLOR = {
+  cobalt:      "#1E3A6E",
+  cobaltDeep:  "#0F1F40",
+  cream:       "#F5F1E8",
+  cream2:      "#EDE6D5",
+  bone:        "#FFFCF5",
+  ink:         "#1A1A1A",
+  inkSoft:     "#555555",
+  tileBlue:    "#2A5BA0",
+};
+
 // Frame geometry — portrait orientation, like a hung painting (5:7 like a card)
 const SLAB_W = 1.0;
 const SLAB_H = 1.4;
@@ -80,6 +92,14 @@ const stageToast   = $("stageToast");
 const dockError    = $("dockError");
 const footerYear   = $("footerYear");
 footerYear.textContent = new Date().getFullYear();
+
+// Populate hierarchy grids (81 cells + 900 cells — too noisy to inline in HTML)
+(function populateHierarchyGrids() {
+  const t2 = document.getElementById("t2grid");
+  const t3 = document.getElementById("t3grid");
+  if (t2) for (let i = 0; i < 81; i++) t2.appendChild(document.createElement("span"));
+  if (t3) for (let i = 0; i < 900; i++) t3.appendChild(document.createElement("span"));
+})();
 
 // ============================================================================
 // State
@@ -328,7 +348,7 @@ async function fetchFragment(id) {
 }
 
 // ============================================================================
-// Canvas drawing — the full FRAME FRONT as a single texture
+// Canvas drawing — modern gallery card front as a single texture
 // ============================================================================
 function roundRectPath(ctx, x, y, w, h, r) {
   const rr = Math.min(r, w / 2, h / 2);
@@ -342,19 +362,20 @@ function roundRectPath(ctx, x, y, w, h, r) {
 }
 
 /**
- * Render the gallery frame FRONT.
+ * Render the gallery card FRONT — modern, clean, editorial.
  *
- *   ┌─────────────────────────────────────┐   <- polished silver molding
- *   │  ╔═══════════════════════════════╗  │
- *   │  ║                               ║  │
- *   │  ║       NFT ARTWORK             ║  │   (inset, with shadow)
- *   │  ║                               ║  │
- *   │  ║                               ║  │
- *   │  ╚═══════════════════════════════╝  │
- *   │  ─────── SILVER PLAQUE ─────────    │
- *   │   GABO · FRAGMENTS SOCIETY          │
- *   │   Fragment #247 — Tier 3 (900)      │
- *   │   ApeChain · 0x3d36…80a2            │
+ *   ┌─────────────────────────────────────┐   <- 1px cobalt outer line
+ *   │ ┌─────────────────────────────────┐ │   <- 2px bone-white inner liner
+ *   │ │ ╔═══════════════════════════╗   │ │
+ *   │ │ ║                           ║   │ │   cream mat with very subtle
+ *   │ │ ║       NFT ARTWORK         ║   │ │   azulejo tile motif at 4% opacity
+ *   │ │ ║                           ║   │ │
+ *   │ │ ╚═══════════════════════════╝   │ │
+ *   │ │ ─────── PLAQUE ─────────────    │ │
+ *   │ │  GABO FRAGMENTS SOCIETY         │ │
+ *   │ │  FRAGMENT #247 · TIER 3 · 1/900 │ │
+ *   │ │  APECHAIN · 0x3d36...80a2       │ │
+ *   │ └─────────────────────────────────┘ │
  *   └─────────────────────────────────────┘
  */
 function drawSlabFront(canvas, entry) {
@@ -362,240 +383,137 @@ function drawSlabFront(canvas, entry) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, W, H);
 
-  // ===== Frame outer molding (polished silver gradient with depth) =====
-  // Base
-  const baseGrad = ctx.createLinearGradient(0, 0, W, H);
-  baseGrad.addColorStop(0,    "#7a7e85");
-  baseGrad.addColorStop(0.25, "#c0c4cc");
-  baseGrad.addColorStop(0.50, "#e8eaef");
-  baseGrad.addColorStop(0.75, "#c0c4cc");
-  baseGrad.addColorStop(1,    "#7a7e85");
-  ctx.fillStyle = baseGrad;
+  // ===== Card body — cream paper background =====
+  ctx.fillStyle = COLOR.cream;
   ctx.fillRect(0, 0, W, H);
 
-  // Inner darker shadow band (the lip of the moulding)
-  const FRAME_W = Math.round(W * 0.06);   // outer molding thickness
-  const FRAME_H_TOP = Math.round(H * 0.045);
-  const FRAME_H_SIDE = Math.round(W * 0.06);
-  const PLAQUE_H = Math.round(H * 0.13);   // plaque area below artwork
+  // Subtle tile motif over the cream (very low alpha — 4% opacity feel)
+  drawTileMotif(ctx, 0, 0, W, H, 0.04);
 
-  // Artwork window coordinates (the inset hole)
-  const artX = FRAME_W;
-  const artY = FRAME_H_TOP;
-  const artW = W - FRAME_W * 2;
-  const artH = H - FRAME_H_TOP - PLAQUE_H - Math.round(H * 0.022);
+  // ===== 1px cobalt outer line =====
+  ctx.strokeStyle = COLOR.cobalt;
+  ctx.lineWidth = Math.max(1, W * 0.0014);
+  ctx.strokeRect(
+    ctx.lineWidth / 2,
+    ctx.lineWidth / 2,
+    W - ctx.lineWidth,
+    H - ctx.lineWidth,
+  );
 
-  // Carved ornament — outer ring of detail (top/bottom bevels)
-  drawFrameOrnaments(ctx, W, H, FRAME_W, FRAME_H_TOP, PLAQUE_H);
+  // ===== 2px bone-white inner liner =====
+  const linerInset = Math.round(W * 0.022);
+  const linerW = Math.max(2, W * 0.0028);
+  ctx.strokeStyle = COLOR.bone;
+  ctx.lineWidth = linerW;
+  ctx.strokeRect(
+    linerInset,
+    linerInset,
+    W - linerInset * 2,
+    H - linerInset * 2,
+  );
+  // very thin cobalt hairline OUTSIDE the bone liner for crispness
+  ctx.strokeStyle = "rgba(30, 58, 110, 0.30)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(
+    linerInset - linerW / 2 - 0.5,
+    linerInset - linerW / 2 - 0.5,
+    W - (linerInset - linerW / 2) * 2 + 1,
+    H - (linerInset - linerW / 2) * 2 + 1,
+  );
 
-  // Inner shadow / rabbet around the artwork window
-  ctx.save();
-  const shadowGrad = ctx.createLinearGradient(artX - 8, artY - 8, artX, artY);
-  shadowGrad.addColorStop(0, "rgba(0,0,0,0.55)");
-  shadowGrad.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = shadowGrad;
-  ctx.fillRect(artX - 12, artY - 12, artW + 24, 14);
+  // ===== Frame layout: artwork window + plaque =====
+  const FRAME_INSET = Math.round(W * 0.060);           // outer mat thickness
+  const PLAQUE_H    = Math.round(H * 0.13);            // plaque area below artwork
 
-  const shadowSide = ctx.createLinearGradient(artX - 8, 0, artX, 0);
-  shadowSide.addColorStop(0, "rgba(0,0,0,0.45)");
-  shadowSide.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = shadowSide;
-  ctx.fillRect(artX - 12, artY - 6, 14, artH + 12);
+  const artX = FRAME_INSET;
+  const artY = FRAME_INSET;
+  const artW = W - FRAME_INSET * 2;
+  const artH = H - FRAME_INSET - PLAQUE_H - Math.round(H * 0.030);
 
-  const shadowRight = ctx.createLinearGradient(artX + artW, 0, artX + artW + 8, 0);
-  shadowRight.addColorStop(0, "rgba(0,0,0,0)");
-  shadowRight.addColorStop(1, "rgba(0,0,0,0.45)");
-  ctx.fillStyle = shadowRight;
-  ctx.fillRect(artX + artW - 2, artY - 6, 14, artH + 12);
-
-  const shadowBot = ctx.createLinearGradient(0, artY + artH, 0, artY + artH + 8);
-  shadowBot.addColorStop(0, "rgba(0,0,0,0)");
-  shadowBot.addColorStop(1, "rgba(0,0,0,0.35)");
-  ctx.fillStyle = shadowBot;
-  ctx.fillRect(artX - 6, artY + artH - 2, artW + 12, 14);
-  ctx.restore();
-
-  // ===== Artwork mat (the bevel between frame and artwork) =====
-  const matPad = Math.round(W * 0.012);
-  ctx.fillStyle = "#1a3050"; // deep cobalt — like a gallery mat
+  // ===== Artwork mat — subtle cream-2 ring around the artwork hole =====
+  const matPad = Math.round(W * 0.014);
+  ctx.fillStyle = COLOR.cream2;
   ctx.fillRect(artX - matPad, artY - matPad, artW + matPad * 2, artH + matPad * 2);
+  // thin cobalt rule around the mat
+  ctx.strokeStyle = "rgba(30, 58, 110, 0.22)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(artX - matPad + 0.5, artY - matPad + 0.5, artW + matPad * 2 - 1, artH + matPad * 2 - 1);
 
-  // Thin silver liner inside the mat
-  ctx.strokeStyle = "rgba(192,196,204,0.65)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(artX - matPad + 4, artY - matPad + 4, artW + matPad * 2 - 8, artH + matPad * 2 - 8);
+  // ===== Soft drop shadow INSIDE the mat, around the artwork (depth cue) =====
+  ctx.save();
+  // top
+  let g = ctx.createLinearGradient(0, artY - 6, 0, artY + 4);
+  g.addColorStop(0, "rgba(15, 31, 64, 0)");
+  g.addColorStop(1, "rgba(15, 31, 64, 0.18)");
+  ctx.fillStyle = g;
+  ctx.fillRect(artX - 4, artY - 6, artW + 8, 10);
+  // left
+  g = ctx.createLinearGradient(artX - 6, 0, artX + 4, 0);
+  g.addColorStop(0, "rgba(15, 31, 64, 0)");
+  g.addColorStop(1, "rgba(15, 31, 64, 0.14)");
+  ctx.fillStyle = g;
+  ctx.fillRect(artX - 6, artY - 4, 10, artH + 8);
+  // right
+  g = ctx.createLinearGradient(artX + artW - 4, 0, artX + artW + 6, 0);
+  g.addColorStop(0, "rgba(15, 31, 64, 0.14)");
+  g.addColorStop(1, "rgba(15, 31, 64, 0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(artX + artW - 4, artY - 4, 10, artH + 8);
+  // bottom
+  g = ctx.createLinearGradient(0, artY + artH - 4, 0, artY + artH + 6);
+  g.addColorStop(0, "rgba(15, 31, 64, 0.12)");
+  g.addColorStop(1, "rgba(15, 31, 64, 0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(artX - 4, artY + artH - 4, artW + 8, 10);
+  ctx.restore();
 
   // ===== Artwork itself =====
   drawArtwork(ctx, artX, artY, artW, artH, entry);
 
-  // ===== Silver plaque below the artwork =====
-  const plaqueX = Math.round(W * 0.16);
-  const plaqueY = artY + artH + Math.round(H * 0.030);
+  // ===== Plaque below the artwork =====
+  const plaqueX = Math.round(W * 0.10);
+  const plaqueY = artY + artH + Math.round(H * 0.038);
   const plaqueW = W - plaqueX * 2;
-  const plaqueH = Math.round(H * 0.09);
-  drawSilverPlaque(ctx, plaqueX, plaqueY, plaqueW, plaqueH, entry);
-
-  // ===== Spotlight from above — soft cool wash for silver =====
-  ctx.save();
-  ctx.globalCompositeOperation = "screen";
-  const spot = ctx.createRadialGradient(W / 2, -H * 0.12, W * 0.10, W / 2, H * 0.35, W * 0.85);
-  spot.addColorStop(0, "rgba(240, 244, 252, 0.45)");
-  spot.addColorStop(0.4, "rgba(240, 244, 252, 0.18)");
-  spot.addColorStop(1, "rgba(240, 244, 252, 0)");
-  ctx.fillStyle = spot;
-  ctx.fillRect(0, 0, W, H);
-  ctx.restore();
-
-  // ===== Final outer frame highlight (top edge catches light) =====
-  ctx.save();
-  const topHL = ctx.createLinearGradient(0, 0, 0, H * 0.04);
-  topHL.addColorStop(0, "rgba(248, 250, 255, 0.70)");
-  topHL.addColorStop(1, "rgba(248, 250, 255, 0)");
-  ctx.fillStyle = topHL;
-  ctx.fillRect(0, 0, W, H * 0.04);
-  ctx.restore();
-
-  // ===== Bottom edge shadow (the frame's lower lip) =====
-  ctx.save();
-  const botSh = ctx.createLinearGradient(0, H - H * 0.04, 0, H);
-  botSh.addColorStop(0, "rgba(0,0,0,0)");
-  botSh.addColorStop(1, "rgba(0,0,0,0.35)");
-  ctx.fillStyle = botSh;
-  ctx.fillRect(0, H - H * 0.04, W, H * 0.04);
-  ctx.restore();
+  const plaqueH = Math.round(H * 0.085);
+  drawPlaque(ctx, plaqueX, plaqueY, plaqueW, plaqueH, entry);
 }
 
-function drawFrameOrnaments(ctx, W, H, FRAME_W, FRAME_H_TOP, PLAQUE_H) {
-  // Inner darker outline of the frame (looks like a carved profile)
+/**
+ * Render a subtle azulejo tile motif over (x, y, w, h) at a given alpha.
+ * Uses small cobalt diamond + ring shapes; keeps the page editorial, not noisy.
+ */
+function drawTileMotif(ctx, x, y, w, h, alpha) {
   ctx.save();
-
-  // Outer beveled edge — bright silver gleam just inside the very edge
-  ctx.strokeStyle = "rgba(232, 234, 239, 0.65)";
-  ctx.lineWidth = 2.5;
-  ctx.strokeRect(2, 2, W - 4, H - 4);
-
-  // Mid darker line — the "valley" between two ridges of the moulding (tarnished silver)
-  ctx.strokeStyle = "rgba(70, 75, 82, 0.55)";
-  ctx.lineWidth = 1.5;
-  const inset = Math.round(FRAME_W * 0.45);
-  ctx.strokeRect(inset, inset * 0.7, W - inset * 2, H - inset * 1.4);
-
-  // Inner bright ridge (catches light around the artwork window)
-  ctx.strokeStyle = "rgba(232, 234, 239, 0.75)";
-  ctx.lineWidth = 1.2;
-  ctx.strokeRect(FRAME_W - 4, FRAME_H_TOP - 4, W - FRAME_W * 2 + 8, H - FRAME_H_TOP - PLAQUE_H - Math.round(H * 0.022) + 8);
-
-  // Corner flourishes — small decorative carved motifs
-  drawCornerFlourish(ctx, FRAME_W * 0.5,     FRAME_H_TOP * 0.5, FRAME_W * 0.55);
-  drawCornerFlourish(ctx, W - FRAME_W * 0.5, FRAME_H_TOP * 0.5, FRAME_W * 0.55, true, false);
-  drawCornerFlourish(ctx, FRAME_W * 0.5,     H - PLAQUE_H * 0.5 - H * 0.022 - FRAME_H_TOP * 0.5, FRAME_W * 0.55, false, true);
-  drawCornerFlourish(ctx, W - FRAME_W * 0.5, H - PLAQUE_H * 0.5 - H * 0.022 - FRAME_H_TOP * 0.5, FRAME_W * 0.55, true, true);
-
-  // Top center crest (museum frame often has a small ornament)
-  drawCenterCrest(ctx, W / 2, FRAME_H_TOP * 0.55, FRAME_W * 0.85);
-
-  ctx.restore();
-}
-
-function drawCornerFlourish(ctx, cx, cy, size, flipX = false, flipY = false) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  if (flipX) ctx.scale(-1, 1);
-  if (flipY) ctx.scale(1, -1);
-
-  // Dark engraving lines (tarnished silver shading)
-  ctx.strokeStyle = "rgba(50, 55, 62, 0.75)";
-  ctx.lineWidth = size * 0.04;
-  ctx.lineCap = "round";
-
-  // Acanthus leaf curl — stylized
-  ctx.beginPath();
-  ctx.moveTo(-size * 0.45, -size * 0.45);
-  ctx.quadraticCurveTo(0, -size * 0.20, size * 0.45, -size * 0.45);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(-size * 0.45, -size * 0.45);
-  ctx.quadraticCurveTo(-size * 0.20, 0, -size * 0.45, size * 0.45);
-  ctx.stroke();
-
-  // Small filled jewel center (cool silver)
-  const jewelGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 0.20);
-  jewelGrad.addColorStop(0, "#e8eaef");
-  jewelGrad.addColorStop(0.6, "#7a7e85");
-  jewelGrad.addColorStop(1, "#4a4d54");
-  ctx.fillStyle = jewelGrad;
-  ctx.beginPath();
-  ctx.arc(0, 0, size * 0.16, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(50, 55, 62, 0.85)";
-  ctx.lineWidth = size * 0.03;
-  ctx.stroke();
-
-  // Bright catchlight on the jewel (top-left)
-  ctx.fillStyle = "rgba(248, 250, 255, 0.75)";
-  ctx.beginPath();
-  ctx.arc(-size * 0.04, -size * 0.04, size * 0.04, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-function drawCenterCrest(ctx, cx, cy, w) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.strokeStyle = "rgba(50, 55, 62, 0.75)";
-  ctx.lineWidth = w * 0.015;
-  ctx.lineCap = "round";
-
-  // Central rosette (silver)
-  const r = w * 0.18;
-  const rosGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
-  rosGrad.addColorStop(0, "#e8eaef");
-  rosGrad.addColorStop(0.7, "#7a7e85");
-  rosGrad.addColorStop(1, "#4a4d54");
-  ctx.fillStyle = rosGrad;
-  ctx.beginPath();
-  ctx.arc(0, 0, r, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  // 8-pointed rays carved around
-  ctx.strokeStyle = "rgba(50, 55, 62, 0.6)";
-  ctx.lineWidth = w * 0.010;
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    const x1 = Math.cos(a) * r * 1.05;
-    const y1 = Math.sin(a) * r * 1.05;
-    const x2 = Math.cos(a) * r * 1.55;
-    const y2 = Math.sin(a) * r * 1.55;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
-    ctx.stroke();
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = COLOR.cobalt;
+  ctx.strokeStyle = COLOR.cobalt;
+  ctx.lineWidth = 1;
+  const tile = Math.round(w / 12);
+  for (let row = 0; row < Math.ceil(h / tile) + 1; row++) {
+    for (let col = 0; col < Math.ceil(w / tile) + 1; col++) {
+      const cx = x + col * tile + tile / 2;
+      const cy = y + row * tile + tile / 2;
+      // diamond
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - tile * 0.20);
+      ctx.lineTo(cx + tile * 0.20, cy);
+      ctx.lineTo(cx, cy + tile * 0.20);
+      ctx.lineTo(cx - tile * 0.20, cy);
+      ctx.closePath();
+      ctx.stroke();
+      // ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, tile * 0.06, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   }
-
-  // Scrollwork wings
-  ctx.lineWidth = w * 0.018;
-  ctx.beginPath();
-  ctx.moveTo(-r * 1.7, 0);
-  ctx.quadraticCurveTo(-r * 2.4, -r * 0.6, -r * 3.0, 0);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(r * 1.7, 0);
-  ctx.quadraticCurveTo(r * 2.4, -r * 0.6, r * 3.0, 0);
-  ctx.stroke();
-
-  // Catchlight
-  ctx.fillStyle = "rgba(248, 250, 255, 0.6)";
-  ctx.beginPath();
-  ctx.arc(-r * 0.25, -r * 0.25, r * 0.18, 0, Math.PI * 2);
-  ctx.fill();
-
   ctx.restore();
 }
 
 function drawArtwork(ctx, x, y, w, h, entry) {
-  // Deep cobalt placeholder (gallery mat color)
-  ctx.fillStyle = "#102d5a";
+  // Cream placeholder background (so we never show a bright cobalt void
+  // — keep the editorial palette consistent)
+  ctx.fillStyle = COLOR.cream;
   ctx.fillRect(x, y, w, h);
 
   if (entry && entry.image && entry.image.complete && entry.image.naturalWidth) {
@@ -605,7 +523,6 @@ function drawArtwork(ctx, x, y, w, h, entry) {
     const dstAR = w / h;
     let dW, dH, dX, dY;
     // Fit by "contain" so artwork is shown fully (no crop, no stretch).
-    // Bars on the sides/top will show the cobalt mat behind.
     if (srcAR > dstAR) {
       dW = w;
       dH = w / srcAR;
@@ -617,125 +534,82 @@ function drawArtwork(ctx, x, y, w, h, entry) {
       dX = x + (w - dW) / 2;
       dY = y;
     }
-    // Soft drop shadow under the artwork
-    ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,0.45)";
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetY = 6;
     ctx.drawImage(img, dX, dY, dW, dH);
-    ctx.restore();
 
-    // Crisp 1px silver inner border around the artwork rectangle
-    ctx.strokeStyle = "rgba(192, 196, 204, 0.65)";
-    ctx.lineWidth = 1.2;
+    // 1px cobalt hairline around the actual artwork rectangle
+    ctx.strokeStyle = "rgba(30, 58, 110, 0.55)";
+    ctx.lineWidth = 1;
     ctx.strokeRect(dX + 0.5, dY + 0.5, dW - 1, dH - 1);
   } else {
     // Placeholder text
-    ctx.fillStyle = "rgba(255, 248, 222, 0.65)";
-    ctx.font = `500 ${Math.round(h * 0.028)}px 'JetBrains Mono', monospace`;
+    ctx.fillStyle = COLOR.inkSoft;
+    ctx.font = `500 ${Math.round(h * 0.030)}px 'Inter', system-ui, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Type a token ID and click Frame it", x + w / 2, y + h / 2 - 14);
-    ctx.font = `400 ${Math.round(h * 0.020)}px 'JetBrains Mono', monospace`;
-    ctx.fillStyle = "rgba(255, 248, 222, 0.42)";
+    ctx.fillText("Type a token ID and click Frame It", x + w / 2, y + h / 2 - 14);
+    ctx.font = `400 ${Math.round(h * 0.022)}px 'JetBrains Mono', monospace`;
+    ctx.fillStyle = "rgba(85, 85, 85, 0.7)";
     ctx.fillText("Gabo Fragments Society · ApeChain · 0–990", x + w / 2, y + h / 2 + 16);
   }
 }
 
-function drawSilverPlaque(ctx, x, y, w, h, entry) {
+function drawPlaque(ctx, x, y, w, h, entry) {
   ctx.save();
-  // Silver plate gradient (engraved appearance, polished sterling)
-  const plate = ctx.createLinearGradient(0, y, 0, y + h);
-  plate.addColorStop(0, "#9aa0a8");
-  plate.addColorStop(0.45, "#d4d7dd");
-  plate.addColorStop(0.55, "#e8eaef");
-  plate.addColorStop(1, "#7a7e85");
-  ctx.fillStyle = plate;
-  roundRectPath(ctx, x, y, w, h, 4);
+  // Bone-white plaque background
+  ctx.fillStyle = COLOR.bone;
+  roundRectPath(ctx, x, y, w, h, 2);
   ctx.fill();
 
-  // Plate border — dark engraving (tarnished silver)
-  ctx.strokeStyle = "rgba(45, 50, 56, 0.85)";
-  ctx.lineWidth = 1.5;
+  // Thin cobalt outline
+  ctx.strokeStyle = COLOR.cobalt;
+  ctx.lineWidth = 1;
   ctx.stroke();
 
-  // Inner double engraved line
-  ctx.strokeStyle = "rgba(45, 50, 56, 0.5)";
+  // Top + bottom rule inside, very thin
+  ctx.strokeStyle = "rgba(30, 58, 110, 0.20)";
   ctx.lineWidth = 0.8;
-  ctx.strokeRect(x + 4, y + 4, w - 8, h - 8);
+  ctx.beginPath();
+  ctx.moveTo(x + 12, y + 6);
+  ctx.lineTo(x + w - 12, y + 6);
+  ctx.moveTo(x + 12, y + h - 6);
+  ctx.lineTo(x + w - 12, y + h - 6);
+  ctx.stroke();
 
-  // Screw heads in the four corners — tiny dark dots
-  const screwR = Math.min(w, h) * 0.012;
-  const screwOff = Math.min(w, h) * 0.028;
-  for (const [sx, sy] of [
-    [x + screwOff, y + screwOff],
-    [x + w - screwOff, y + screwOff],
-    [x + screwOff, y + h - screwOff],
-    [x + w - screwOff, y + h - screwOff],
-  ]) {
-    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, screwR);
-    sg.addColorStop(0, "#2a2d32");
-    sg.addColorStop(1, "#4a4d54");
-    ctx.fillStyle = sg;
-    ctx.beginPath();
-    ctx.arc(sx, sy, screwR, 0, Math.PI * 2);
-    ctx.fill();
-    // slot
-    ctx.strokeStyle = "rgba(15,18,22,0.85)";
-    ctx.lineWidth = 0.6;
-    ctx.beginPath();
-    ctx.moveTo(sx - screwR * 0.7, sy);
-    ctx.lineTo(sx + screwR * 0.7, sy);
-    ctx.stroke();
-  }
-
-  // ===== Engraved text — deep cobalt for contrast against silver =====
+  // ===== Text =====
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "center";
 
-  // Title — Cormorant / serif (italic for elegance)
-  const titleSize = Math.round(h * 0.26);
-  ctx.font = `600 ${titleSize}px 'Cormorant Garamond', 'Playfair Display', Georgia, serif`;
-  ctx.fillStyle = "#0d1d35";
-  // Shadow for engraved depth (cool silver highlight)
-  ctx.shadowColor = "rgba(248, 250, 255, 0.65)";
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 1;
-  ctx.shadowBlur = 0;
-  const title = (entry?.metadata?.name && String(entry.metadata.name)) || "Gabo Fragments Society";
-  ctx.fillText(truncateToWidth(ctx, title, w * 0.92), x + w / 2, y + titleSize + 4);
-  ctx.shadowColor = "transparent";
+  // Title — Inter Bold, cobalt deep
+  const titleSize = Math.round(h * 0.22);
+  ctx.font = `800 ${titleSize}px 'Inter', system-ui, sans-serif`;
+  ctx.fillStyle = COLOR.cobaltDeep;
+  const title = "GABO FRAGMENTS SOCIETY";
+  ctx.fillText(truncateToWidth(ctx, title, w * 0.92), x + w / 2, y + titleSize + Math.round(h * 0.08));
 
-  // Subtitle — fragment id + tier
-  const subSize = Math.round(h * 0.18);
-  ctx.font = `600 ${subSize}px 'Cinzel', 'Cormorant Garamond', serif`;
-  ctx.fillStyle = "#102d5a";
+  // Subtitle — fragment metadata (Inter Regular)
+  const subSize = Math.round(h * 0.16);
+  ctx.font = `600 ${subSize}px 'Inter', system-ui, sans-serif`;
+  ctx.fillStyle = COLOR.cobalt;
   const tier = entry ? entry.tier : null;
-  const sub = entry
-    ? (tier && tier.tier === 0
-        ? `Fragment #${entry.id} · Genesis`
-        : tier
-          ? `Fragment #${entry.id} · ${tier.label} (${tier.total})`
-          : `Fragment #${entry.id}`)
-    : "Fragment #---";
-  ctx.shadowColor = "rgba(248, 250, 255, 0.55)";
-  ctx.shadowOffsetY = 1;
-  ctx.fillText(sub, x + w / 2, y + titleSize + 4 + subSize + 6);
+  let sub;
+  if (!entry) {
+    sub = "FRAGMENT #--- · ---";
+  } else if (tier && tier.tier === 0) {
+    sub = `FRAGMENT #${entry.id} · GENESIS · 1/1`;
+  } else if (tier) {
+    sub = `FRAGMENT #${entry.id} · ${tier.label.toUpperCase()} · ${tier.of}/${tier.total}`;
+  } else {
+    sub = `FRAGMENT #${entry.id}`;
+  }
+  ctx.fillText(sub, x + w / 2, y + titleSize + Math.round(h * 0.08) + subSize + 6);
 
-  // Provenance line (small mono) — chain + short contract
+  // Provenance line — JetBrains Mono for the contract address
   const provSize = Math.round(h * 0.13);
-  ctx.font = `500 ${provSize}px 'JetBrains Mono', monospace`;
-  ctx.fillStyle = "#0d1d35";
+  ctx.font = `500 ${provSize}px 'JetBrains Mono', ui-monospace, monospace`;
+  ctx.fillStyle = COLOR.ink;
   const cShort = GABO_FRAGMENTS.contract.slice(0, 6) + "…" + GABO_FRAGMENTS.contract.slice(-4);
-  const prov = `ApeChain · ${cShort}`;
-  ctx.fillText(prov, x + w / 2, y + titleSize + 4 + subSize + 6 + provSize + 6);
-
-  // Decorative diamond separator marks (tarnished silver)
-  ctx.shadowColor = "transparent";
-  ctx.fillStyle = "rgba(45, 50, 56, 0.7)";
-  ctx.font = `600 ${Math.round(h * 0.14)}px 'Cormorant Garamond', serif`;
-  ctx.fillText("◆", x + w * 0.10, y + h * 0.62);
-  ctx.fillText("◆", x + w * 0.90, y + h * 0.62);
+  const prov = `APECHAIN · ${cShort}`;
+  ctx.fillText(prov, x + w / 2, y + titleSize + Math.round(h * 0.08) + subSize + 6 + provSize + 6);
 
   ctx.restore();
 }
@@ -765,7 +639,7 @@ function init3D() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 1.0;
 
   scene = new THREE.Scene();
   scene.background = null;
@@ -778,16 +652,16 @@ function init3D() {
   pmrem.compileEquirectangularShader();
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
-  // Lighting: cool gallery spotlight from above, soft ambient + side fill
-  const key = new THREE.DirectionalLight(0xf6f8ff, 1.25);
+  // Lighting: warm gallery key + soft fill + ambient
+  const key = new THREE.DirectionalLight(0xfdf6e8, 1.10);
   key.position.set(0.5, 5, 4);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0xdce0e8, 0.55);
+  const fill = new THREE.DirectionalLight(0xe6ddc8, 0.45);
   fill.position.set(-4, 1, 3);
   scene.add(fill);
-  scene.add(new THREE.AmbientLight(0xeaeef5, 0.35));
+  scene.add(new THREE.AmbientLight(0xeae3d2, 0.35));
 
-  const slabGeom = new RoundedBoxGeometry(SLAB_W, SLAB_H, SLAB_D, 6, 0.015);
+  const slabGeom = new RoundedBoxGeometry(SLAB_W, SLAB_H, SLAB_D, 6, 0.012);
 
   slabTextureCanvas = document.createElement("canvas");
   slabTextureCanvas.width  = TEX_W;
@@ -799,16 +673,14 @@ function init3D() {
   slabTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
   slabTexture.needsUpdate = true;
 
-  // Silver frame material — polished sterling sheen: modestly higher metalness
-  // and lower roughness than a wood frame, without going full chrome.
+  // Cobalt-ink matte material — reads as a modern gallery card, not metal
   frontMaterial = new THREE.MeshPhysicalMaterial({
     map: slabTexture,
-    color: 0xc0c4cc,
-    roughness: 0.30,
-    metalness: 0.65,
-    clearcoat: 0.7,
-    clearcoatRoughness: 0.12,
-    envMapIntensity: 1.15,
+    color: 0x1A1A1A,
+    metalness: 0.10,
+    roughness: 0.85,
+    clearcoat: 0.0,
+    envMapIntensity: 0.30,
     side: THREE.FrontSide,
   });
 
@@ -869,7 +741,7 @@ function startAutoRotate() {
         slabMesh.rotation.x = manualRot.x;
         slabMesh.rotation.y = manualRot.y;
       } else {
-        // Slower, more dignified rotation — like a hanging frame catching light
+        // Slow, dignified rotation — like a hanging card catching light
         slabMesh.rotation.y = Math.sin(t * 0.45) * 0.22;
         slabMesh.rotation.x = Math.cos(t * 0.33) * 0.04;
       }
@@ -923,7 +795,7 @@ function render2DPreview(t = 0) {
   ctx.save();
   ctx.translate(W / 2, H / 2);
   ctx.transform(visScale, 0, skewX, 1, 0, 0);
-  ctx.shadowColor = "rgba(13, 29, 53, 0.45)";
+  ctx.shadowColor = "rgba(15, 31, 64, 0.35)";
   ctx.shadowBlur = 36;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 14;
@@ -935,7 +807,7 @@ function render2DPreview(t = 0) {
 // Exports
 // ============================================================================
 function requireCurrent() {
-  if (!current) throw new Error("Load a fragment first — type a token id and click Frame it.");
+  if (!current) throw new Error("Load a fragment first — type a token id and click Frame It.");
   return current;
 }
 
@@ -956,7 +828,7 @@ async function exportSlabPNG() {
       renderer.render(scene, camera);
       const blob = await canvasToBlob(canvas, "image/png");
       downloadBlob(blob, `gabo-frame-${e.id}.png`);
-      showToast("◆ frame PNG saved");
+      showToast("frame PNG saved");
     } finally {
       renderer.setPixelRatio(prevPR);
       renderer.setSize(prev.x, prev.y, false);
@@ -973,8 +845,8 @@ async function exportSlabPNG() {
     const ctx = out.getContext("2d");
     ctx.imageSmoothingQuality = "high";
 
-    // Aged-paper background
-    ctx.fillStyle = "#ebe4d2";
+    // Cream paper background
+    ctx.fillStyle = COLOR.cream;
     ctx.fillRect(0, 0, W, H);
 
     const drawW = Math.round(W * 0.92);
@@ -991,7 +863,7 @@ async function exportSlabPNG() {
     ctx.save();
     ctx.translate(W / 2, H / 2);
     ctx.transform(visScale, 0, skewX, 1, 0, 0);
-    ctx.shadowColor = "rgba(13, 29, 53, 0.45)";
+    ctx.shadowColor = "rgba(15, 31, 64, 0.35)";
     ctx.shadowBlur = 50;
     ctx.shadowOffsetY = 22;
     ctx.drawImage(slabHighRes, -drawW / 2, -drawH / 2);
@@ -999,7 +871,7 @@ async function exportSlabPNG() {
 
     const blob = await canvasToBlob(out, "image/png");
     downloadBlob(blob, `gabo-frame-${e.id}.png`);
-    showToast("◆ frame PNG saved");
+    showToast("frame PNG saved");
   }
 }
 
@@ -1046,7 +918,7 @@ async function exportSlabGIF() {
       renderer.setPixelRatio(1);
       renderer.setSize(W, H, false);
       camera.aspect = W / H; camera.updateProjectionMatrix();
-      scene.background = new THREE.Color(0xebe4d2);
+      scene.background = new THREE.Color(0xEDE6D5); // cream-2
 
       const FRAMES = 36, DELAY = 70;
       for (let i = 0; i < FRAMES; i++) {
@@ -1085,13 +957,13 @@ async function exportSlabGIF() {
     gif.render();
   });
   downloadBlob(blob, `gabo-frame-${e.id}.gif`);
-  showToast("◆ frame GIF saved");
+  showToast("frame GIF saved");
 }
 
 function render2DSlabFrame(target, t) {
   const W = target.width, H = target.height;
   const ctx = target.getContext("2d");
-  ctx.fillStyle = "#ebe4d2";
+  ctx.fillStyle = COLOR.cream2;
   ctx.fillRect(0, 0, W, H);
 
   const margin = 0.95;
@@ -1107,29 +979,10 @@ function render2DSlabFrame(target, t) {
   ctx.save();
   ctx.translate(W / 2, H / 2);
   ctx.transform(visScale, 0, skewX, 1, 0, 0);
-  ctx.shadowColor = "rgba(13, 29, 53, 0.45)";
+  ctx.shadowColor = "rgba(15, 31, 64, 0.35)";
   ctx.shadowBlur = 40;
   ctx.shadowOffsetY = 18;
   ctx.drawImage(slabTextureCanvas, -drawW / 2, -drawH / 2, drawW, drawH);
-  ctx.restore();
-
-  // Warm spotlight catchlight that moves with rotation
-  ctx.save();
-  ctx.translate(W / 2, H / 2);
-  ctx.transform(visScale, 0, skewX, 1, 0, 0);
-  ctx.beginPath();
-  ctx.rect(-drawW / 2, -drawH / 2, drawW, drawH);
-  ctx.clip();
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-  ctx.globalCompositeOperation = "screen";
-  const cx = W / 2 + angle * W * 0.4;
-  const cool = ctx.createLinearGradient(cx - W * 0.2, 0, cx + W * 0.2, H);
-  cool.addColorStop(0.0, "rgba(240, 244, 252, 0)");
-  cool.addColorStop(0.5, "rgba(240, 244, 252, 0.25)");
-  cool.addColorStop(1.0, "rgba(240, 244, 252, 0)");
-  ctx.fillStyle = cool;
-  ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }
 
@@ -1153,7 +1006,7 @@ async function exportSlabWebM() {
       renderer.setPixelRatio(1);
       renderer.setSize(W, H, false);
       camera.aspect = W / H; camera.updateProjectionMatrix();
-      scene.background = new THREE.Color(0xebe4d2);
+      scene.background = new THREE.Color(0xEDE6D5); // cream-2
       slabMesh.rotation.y = 0;
       renderer.render(scene, camera);
 
@@ -1179,7 +1032,7 @@ async function exportSlabWebM() {
       const blob = new Blob(chunks, { type: mime });
       if (!blob.size) throw new Error("WebM produced no data");
       downloadBlob(blob, `gabo-frame-${e.id}.webm`);
-      showToast("◆ frame WebM saved");
+      showToast("frame WebM saved");
     } finally {
       scene.background = null;
       renderer.setPixelRatio(prevPR);
@@ -1213,7 +1066,7 @@ async function exportSlabWebM() {
     const blob = new Blob(chunks, { type: mime });
     if (!blob.size) throw new Error("WebM produced no data");
     downloadBlob(blob, `gabo-frame-${e.id}.webm`);
-    showToast("◆ frame WebM saved");
+    showToast("frame WebM saved");
   }
 }
 
@@ -1228,17 +1081,16 @@ async function exportSlabGLB() {
   if (use3D && slabMesh) {
     mesh = slabMesh.clone();
   } else {
-    const geom = new RoundedBoxGeometry(SLAB_W, SLAB_H, SLAB_D, 6, 0.015);
+    const geom = new RoundedBoxGeometry(SLAB_W, SLAB_H, SLAB_D, 6, 0.012);
     const tex = new THREE.CanvasTexture(slabTextureCanvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.needsUpdate = true;
     const mat = new THREE.MeshPhysicalMaterial({
       map: tex,
-      color: 0xc0c4cc,
-      roughness: 0.30,
-      metalness: 0.65,
-      clearcoat: 0.7,
-      clearcoatRoughness: 0.12,
+      color: 0x1A1A1A,
+      metalness: 0.10,
+      roughness: 0.85,
+      clearcoat: 0.0,
     });
     mesh = new THREE.Mesh(geom, mat);
   }
@@ -1253,7 +1105,7 @@ async function exportSlabGLB() {
   });
   if (!(buf instanceof ArrayBuffer)) throw new Error("GLB returned non-binary");
   downloadBlob(new Blob([buf], { type: "model/gltf-binary" }), `gabo-frame-${e.id}.glb`);
-  showToast("◆ frame GLB saved");
+  showToast("frame GLB saved");
 }
 
 // ============================================================================
@@ -1277,7 +1129,7 @@ async function loadFragment(rawId) {
     current = entry;
     rerenderSlabTexture();
     const tierLabel = entry.tier.tier === 0 ? "Genesis" : entry.tier.label;
-    showToast(`◆ Fragment #${id} · ${tierLabel} loaded in ${entry.loadMs}ms`);
+    showToast(`Fragment #${id} · ${tierLabel} loaded in ${entry.loadMs}ms`);
   } catch (e) {
     console.error(e);
     showError(e.message || "Could not load fragment");

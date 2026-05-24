@@ -3,22 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Frame Lab · Community Exhibit for Gabo Fragments Society</title>
+    <title>Frame Lab · Gabo Fragments Society</title>
     <meta
       name="description"
-      content="Turn any Gabo Fragments Society NFT into a community-curated gallery frame. Preview, rotate in 3D, export as PNG or GLB."
+      content="A community tool to exhibit your Gabo Fragments Society NFT. Pick a token ID, see it in a gallery card, export as PNG, GIF, WebM or GLB."
     />
-    <meta name="theme-color" content="#faf7f0" />
+    <meta name="theme-color" content="#F5F1E8" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Gabo Fragments Frame Lab" />
+    <meta property="og:title" content="Frame Lab · Gabo Fragments Society" />
     <meta property="og:description" content="Frame any Gabo Fragments Society piece as a community exhibit. Community fan tool, ApeChain." />
     <meta property="og:image" content="logo.svg" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Gabo Fragments Frame Lab" />
+    <meta name="twitter:title" content="Frame Lab · Gabo Fragments Society" />
     <meta name="twitter:description" content="Frame any Gabo Fragments Society piece as a community exhibit. Community fan tool, ApeChain." />
 
     <link rel="icon" type="image/svg+xml" href="logo.svg" />
@@ -30,7 +30,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -47,71 +47,58 @@
   </head>
   <body>
 
-    <!-- Azulejo tile background — subtle repeating cobalt motif on aged paper -->
-    <div class="bg-tiles" aria-hidden="true">
-      <div class="tile-grid"></div>
-      <div class="spotlight"></div>
+    <!-- ============================================================== -->
+    <!-- NAV BAR                                                         -->
+    <!-- ============================================================== -->
+    <nav class="nav" aria-label="Primary">
+      <a class="nav-logo" href="#top">
+        <span class="logo-block">GFS</span>
+        <span class="logo-text">Frame Lab</span>
+      </a>
+      <div class="nav-links">
+        <a href="https://opensea.io/collection/gabofragments" target="_blank" rel="noopener">OpenSea</a>
+        <a href="https://x.com/thegaboeth" target="_blank" rel="noopener">@thegaboeth</a>
+        <a class="nav-cta" href="https://opensea.io/collection/gabofragments" target="_blank" rel="noopener">Back to Collection</a>
+      </div>
+    </nav>
 
-      <svg class="ornament" style="top: 8%; left: 6%; width: 96px; height: 96px;" viewBox="0 0 96 96">
-        <g fill="none" stroke="#1e4a8c" stroke-width="1.4" opacity="0.55">
-          <circle cx="48" cy="48" r="34"/>
-          <circle cx="48" cy="48" r="22" stroke-dasharray="3 4"/>
-          <path d="M48 12 L48 84 M12 48 L84 48" stroke-dasharray="2 6"/>
-        </g>
-      </svg>
-      <svg class="ornament" style="top: 56%; right: 5%; width: 84px; height: 84px; animation-delay: -7s;" viewBox="0 0 84 84">
-        <g fill="none" stroke="#1e4a8c" stroke-width="1.2" opacity="0.5">
-          <path d="M42 8 Q60 26 42 42 Q24 58 42 76"/>
-          <path d="M8 42 Q26 24 42 42 Q58 60 76 42"/>
-        </g>
-      </svg>
-      <svg class="ornament" style="bottom: 12%; left: 8%; width: 72px; height: 72px; animation-delay: -11s;" viewBox="0 0 72 72">
-        <g fill="none" stroke="#c0c4cc" stroke-width="1.2" opacity="0.55">
-          <rect x="14" y="14" width="44" height="44" rx="2"/>
-          <rect x="20" y="20" width="32" height="32" rx="2" stroke-dasharray="2 3"/>
-        </g>
-      </svg>
-    </div>
+    <div id="top"></div>
 
-    <div id="root">
-      <div class="page">
+    <div class="page">
 
-        <!-- Top bar -->
-        <header class="topbar">
-          <div class="brand-mark">
-            <span class="dot">
-              <img src="logo.svg" alt="" width="20" height="20" />
-            </span>
-            <span>Frame Lab · Gabo</span>
-          </div>
-          <div class="center-tag">
-            Gallery · Fragment · <span class="serif-bg">Frame</span>
-          </div>
-          <div class="top-meta">
-            <span class="pill">● ApeChain</span>
-            <span class="top-meta-text">Community Exhibit · 2026</span>
-          </div>
-        </header>
+      <!-- =========================================================== -->
+      <!-- MINI HERO                                                    -->
+      <!-- =========================================================== -->
+      <section class="hero" aria-label="Frame Lab hero">
+        <h1 class="hero-headline">
+          Frame any<br/><span class="accent">Fragment.</span>
+        </h1>
+        <p class="hero-sub">
+          A community tool to exhibit your Gabo Fragments Society NFT.
+          Pick a token ID, see it in a gallery card, export as PNG, GIF, WebM or GLB.
+        </p>
+        <span class="hero-badge">
+          <span class="dot"></span>
+          Built on ApeChain
+        </span>
+      </section>
 
-        <main class="lab-grid">
+      <!-- =========================================================== -->
+      <!-- FRAME LAB — the tool                                         -->
+      <!-- =========================================================== -->
+      <section class="lab" aria-label="Frame Lab tool">
+        <div class="section-head">
+          <p class="section-eyebrow">The Tool</p>
+          <h2 class="section-title">Frame Lab</h2>
+        </div>
+
+        <div class="lab-grid">
 
           <!-- LEFT: Controls -->
           <section class="panel" aria-label="Fragment input">
             <div class="panel-head">
-              <span><span class="num">1</span><span class="panel-head-label">Fragment</span></span>
-              <span class="right">
-                <span class="led"></span>
-                <span class="led" style="background: #c0c4cc; animation-delay: 0.5s;"></span>
-              </span>
-            </div>
-
-            <div class="field">
-              <label for="collection">Collection</label>
-              <div class="seg" role="tablist">
-                <button class="seg-btn active" data-collection="gabo" role="tab" aria-selected="true" id="collection">
-                  ◆ GABO FRAGMENTS
-                </button>
-              </div>
+              <span class="num">1</span>
+              <span class="panel-head-label">Fragment</span>
             </div>
 
             <div class="field">
@@ -128,133 +115,226 @@
                   maxlength="3"
                 />
                 <button id="frameIt" class="btn-icon" title="Random Fragment" aria-label="Pick a random Fragment">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="3.5" y="3.5" width="17" height="17" rx="2.5" />
-                    <circle cx="8.5" cy="8.5" r="1.4" fill="currentColor" stroke="none" />
-                    <circle cx="15.5" cy="8.5" r="1.4" fill="currentColor" stroke="none" />
-                    <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
-                    <circle cx="8.5" cy="15.5" r="1.4" fill="currentColor" stroke="none" />
-                    <circle cx="15.5" cy="15.5" r="1.4" fill="currentColor" stroke="none" />
-                  </svg>
+                  Random
                 </button>
               </div>
             </div>
 
             <div class="field">
               <button class="btn-cta" id="frameItBtn">
-                <span class="sparkle">◆</span>
-                <span>Frame it</span>
-                <span class="sparkle">◆</span>
+                <span>Frame It</span>
               </button>
             </div>
 
             <p class="dock-error" id="dockError" hidden></p>
 
             <div class="tier-info">
-              <div class="tier-label">Hierarchy</div>
+              <div class="tier-label">Fragment Hierarchy</div>
               <div class="tier-grid">
-                <span class="tier-pill tier-0"><span class="tier-k">#0</span> Genesis</span>
-                <span class="tier-pill tier-1"><span class="tier-k">1·9</span> Tier 1</span>
-                <span class="tier-pill tier-2"><span class="tier-k">10·90</span> Tier 2</span>
-                <span class="tier-pill tier-3"><span class="tier-k">91·990</span> Tier 3</span>
+                <span class="tier-pill"><span class="tier-k">#0</span> Genesis</span>
+                <span class="tier-pill"><span class="tier-k">1·9</span> Tier 1</span>
+                <span class="tier-pill"><span class="tier-k">10·90</span> Tier 2</span>
+                <span class="tier-pill"><span class="tier-k">91·990</span> Tier 3</span>
               </div>
             </div>
           </section>
 
-          <!-- CENTER: Frame preview -->
-          <section class="card-stage" id="stage" aria-label="Frame preview">
-            <div class="stage-bg" aria-hidden="true"></div>
+          <!-- RIGHT: Stage + exports below -->
+          <div>
+            <section class="card-stage" id="stage" aria-label="Frame preview">
+              <div class="stage-bg" aria-hidden="true"></div>
 
-            <span class="stage-spark" style="top: 10%; left: 10%;" aria-hidden="true">◆</span>
-            <span class="stage-spark" style="top: 16%; right: 14%; animation-delay: 1s;" aria-hidden="true">✦</span>
-            <span class="stage-spark" style="bottom: 18%; left: 14%; animation-delay: 2s;" aria-hidden="true">◇</span>
-            <span class="stage-spark" style="bottom: 12%; right: 10%; animation-delay: 0.5s;" aria-hidden="true">◆</span>
+              <div class="slab-wrap">
+                <canvas id="slabCanvas" class="slab-canvas" aria-label="Gabo Fragments artwork in a gallery card frame"></canvas>
+              </div>
 
-            <div class="slab-wrap">
-              <canvas id="slabCanvas" class="slab-canvas" aria-label="Silver-framed Gabo Fragments artwork"></canvas>
-            </div>
+              <div class="stage-loading" id="stageLoading" hidden>
+                <span class="loading-bubble" id="loadingLabel">loading…</span>
+              </div>
+              <div class="stage-toast" id="stageToast" hidden></div>
+            </section>
 
-            <div class="stage-loading" id="stageLoading" hidden>
-              <span class="loading-bubble" id="loadingLabel">loading…</span>
-            </div>
-            <div class="stage-toast" id="stageToast" hidden></div>
-          </section>
-
-          <!-- RIGHT: Export -->
-          <section class="panel" aria-label="Export">
-            <div class="panel-head">
-              <span><span class="num">2</span><span class="panel-head-label">Export</span></span>
-              <span class="right"><span class="led" style="background: #c0c4cc;"></span></span>
-            </div>
-
-            <div class="export-grid">
+            <div class="export-row" aria-label="Export formats">
               <button class="export-btn btn" data-export="slab-png" data-fmt="png">
                 <span class="ico">PNG</span>
-                <span>
-                  Frame PNG
-                  <div class="meta">Full frame · 2x</div>
-                </span>
-              </button>
-              <button class="export-btn btn" data-export="slab-glb" data-fmt="glb">
-                <span class="ico">GLB</span>
-                <span>
-                  Frame GLB
-                  <div class="meta">3D · WebXR ready</div>
-                </span>
+                <span class="meta">Full frame · 2x</span>
               </button>
               <button class="export-btn btn" data-export="slab-gif" data-fmt="gif">
                 <span class="ico">GIF</span>
-                <span>
-                  Frame GIF
-                  <div class="meta">Rotation · 2.5s loop</div>
-                </span>
+                <span class="meta">Rotation · 2.5s</span>
               </button>
               <button class="export-btn btn" data-export="slab-webm" data-fmt="webm">
                 <span class="ico">WEBM</span>
-                <span>
-                  Frame WebM
-                  <div class="meta">HD · gallery spotlight</div>
-                </span>
+                <span class="meta">HD video</span>
+              </button>
+              <button class="export-btn btn" data-export="slab-glb" data-fmt="glb">
+                <span class="ico">GLB</span>
+                <span class="meta">3D · WebXR</span>
               </button>
             </div>
+          </div>
 
-            <div class="tip">
-              <div class="tip-label">↳ Tip</div>
-              <div class="tip-body">Pick a Token ID, tap <b>Frame it</b>, then export in whichever format you want. Made with love for the Society.</div>
+        </div>
+      </section>
+
+      <!-- =========================================================== -->
+      <!-- FRAGMENT HIERARCHY                                           -->
+      <!-- =========================================================== -->
+      <section class="hierarchy" aria-label="Fragment hierarchy">
+        <div class="section-head">
+          <p class="section-eyebrow">Collection Structure</p>
+          <h2 class="section-title">991 Fragments. 1 Artwork.</h2>
+        </div>
+
+        <div class="hierarchy-grid">
+          <div class="tier-card t1">
+            <div class="num">9</div>
+            <div class="name">Large Fragments</div>
+            <div class="sub">3 × 3 Grid · Tier 1</div>
+            <div class="grid-vis" aria-hidden="true">
+              <!-- 9 cells -->
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
+              <span></span><span></span><span></span>
             </div>
-          </section>
-
-        </main>
-
-        <!-- Stats strip -->
-        <div class="stats">
-          <div class="stat">
-            <div class="v">991<span class="swirl">/</span>991</div>
-            <div class="k">Fragments Minted</div>
           </div>
-          <div class="stat">
-            <div class="v">4<span class="swirl">+</span></div>
-            <div class="k">Export Formats</div>
+
+          <div class="tier-card t2">
+            <div class="num">81</div>
+            <div class="name">Medium Fragments</div>
+            <div class="sub">9 × 9 Grid · Tier 2</div>
+            <div class="grid-vis" id="t2grid" aria-hidden="true"></div>
           </div>
-          <div class="stat">
-            <div class="v"><span class="swirl">3</span></div>
-            <div class="k">Tiers · Genesis to 900</div>
+
+          <div class="tier-card t3">
+            <div class="num">900</div>
+            <div class="name">Micro Fragments</div>
+            <div class="sub">30 × 30 Grid · Tier 3</div>
+            <div class="grid-vis" id="t3grid" aria-hidden="true"></div>
           </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="footer">
-          <div class="row1">Made in Lisbon ◆ by the Society, for the Society</div>
-          <div class="row2">
-            &copy; <span id="footerYear">2026</span> · Independent, non-commercial fan tool by an NFT holder, for NFT holders.<br/>
-            <strong>This project is NOT affiliated with, endorsed by, or sponsored by @thegaboeth, the Gabo Fragments Society team, OpenSea, ApeChain, or ApeFest.</strong>
-            All trademarks, names and artwork are the property of their respective owners. This tool only renders publicly available
-            on-chain token metadata into a decorative gallery frame for personal, non-commercial use by holders of their own NFTs.
-          </div>
-        </footer>
+        <p class="hierarchy-caption">
+          The original ceramic artwork was divided into three sizes of fragments. Genesis #0 is the photo
+          of the original piece. Tokens 1–9 are the 9 largest pieces. Tokens 10–90 are the 81 medium pieces.
+          Tokens 91–990 are the 900 smallest micro-fragments.
+        </p>
+      </section>
 
-      </div>
+      <!-- =========================================================== -->
+      <!-- FROM LISBON TO THE CHAIN                                     -->
+      <!-- =========================================================== -->
+      <section class="timeline-section" aria-label="Origin story">
+        <div class="section-head">
+          <p class="section-eyebrow">Origin Story</p>
+          <h2 class="section-title">From Lisbon to the Chain</h2>
+        </div>
+
+        <div class="timeline" role="list">
+          <article class="timeline-step" role="listitem">
+            <span class="step-num">01</span>
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 0 1 9.5 9 2.5 2.5 0 0 1 12 6.5 2.5 2.5 0 0 1 14.5 9a2.5 2.5 0 0 1-2.5 2.5z"/></svg>
+            </span>
+            <h3 class="step-title">Ape Fest Lisbon</h3>
+            <p class="step-desc">ApeChain is introduced to the world.</p>
+          </article>
+          <span class="timeline-arrow" aria-hidden="true">→</span>
+
+          <article class="timeline-step" role="listitem">
+            <span class="step-num">02</span>
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            </span>
+            <h3 class="step-title">Tile Artwork</h3>
+            <p class="step-desc">Gabo creates an original ceramic tile artwork.</p>
+          </article>
+          <span class="timeline-arrow" aria-hidden="true">→</span>
+
+          <article class="timeline-step" role="listitem">
+            <span class="step-num">03</span>
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </span>
+            <h3 class="step-title">Photographed</h3>
+            <p class="step-desc">Captured in high resolution to preserve every detail.</p>
+          </article>
+          <span class="timeline-arrow" aria-hidden="true">→</span>
+
+          <article class="timeline-step" role="listitem">
+            <span class="step-num">04</span>
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 3h7v7H3V3zm11 0h7v7h-7V3zM3 14h7v7H3v-7zm11 0h7v7h-7v-7z"/></svg>
+            </span>
+            <h3 class="step-title">Vectorized</h3>
+            <p class="step-desc">Digitally vectorized to maintain the essence.</p>
+          </article>
+          <span class="timeline-arrow" aria-hidden="true">→</span>
+
+          <article class="timeline-step" role="listitem">
+            <span class="step-num">05</span>
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M3 3h4v4H3V3zm6 0h4v4H9V3zm6 0h4v4h-4V3zM3 9h4v4H3V9zm6 0h4v4H9V9zm6 0h4v4h-4V9zM3 15h4v4H3v-4zm6 0h4v4H9v-4zm6 0h4v4h-4v-4z"/></svg>
+            </span>
+            <h3 class="step-title">Fragmented</h3>
+            <p class="step-desc">Divided into 991 unique fragments of different sizes.</p>
+          </article>
+          <span class="timeline-arrow" aria-hidden="true">→</span>
+
+          <article class="timeline-step" role="listitem">
+            <span class="step-num">06</span>
+            <span class="step-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M10.59 13.41a1.996 1.996 0 0 1 0-2.83l3.54-3.54a4 4 0 1 1 5.66 5.66l-1.42 1.42-1.41-1.42 1.42-1.41a2 2 0 1 0-2.83-2.83l-3.54 3.53a1 1 0 0 0 0 1.42l-1.42 1.42zm2.82-2.82a1.996 1.996 0 0 1 0 2.83l-3.54 3.54a4 4 0 1 1-5.66-5.66l1.42-1.42 1.41 1.42-1.42 1.41a2 2 0 1 0 2.83 2.83l3.54-3.53a1 1 0 0 0 0-1.42l1.42-1.42z"/></svg>
+            </span>
+            <h3 class="step-title">Minted on ApeChain</h3>
+            <p class="step-desc">991 unique NFTs. Forever on-chain.</p>
+          </article>
+        </div>
+      </section>
+
     </div>
+
+    <!-- ============================================================== -->
+    <!-- FOOTER                                                          -->
+    <!-- ============================================================== -->
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="logo-block">GFS</div>
+          <p class="tag">A fragment of art.<br/>A piece of history.</p>
+        </div>
+
+        <div class="footer-cols">
+          <div class="footer-col">
+            <h4>Links</h4>
+            <ul>
+              <li><a href="https://opensea.io/collection/gabofragments" target="_blank" rel="noopener">OpenSea Collection</a></li>
+              <li><a href="https://x.com/thegaboeth" target="_blank" rel="noopener">@thegaboeth</a></li>
+              <li><a href="https://apescan.io/address/0x3d36acd9123550b9de753c7535578205b15480a2" target="_blank" rel="noopener">ApeChain Explorer</a></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Resources</h4>
+            <ul>
+              <li><span class="muted">Whitepaper (coming)</span></li>
+              <li><span class="muted">FAQ (coming)</span></li>
+            </ul>
+          </div>
+          <div class="footer-col">
+            <h4>Disclaimer</h4>
+            <p class="footer-disclaimer">
+              <strong>Community fan-art tool. Not affiliated with</strong> Gabo or thegaboeth.
+              Built by the Society, for the Society.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; <span id="footerYear">2026</span> Gabo Fragments Society. All rights reserved.</span>
+        <span>Made in Lisbon · Built on ApeChain</span>
+      </div>
+    </footer>
 
     <script type="module" src="app.js"></script>
   </body>
