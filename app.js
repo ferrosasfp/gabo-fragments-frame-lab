@@ -98,37 +98,50 @@ const footerYear   = $("footerYear");
 footerYear.textContent = new Date().getFullYear();
 
 // Populate hierarchy grids (81 + 900 cells too noisy to inline in HTML) +
-// mark a few random cells as .active so they pop as solid cobalt over the
-// Genesis artwork background. Counts: 1 / 3 / 10 (per design spec).
+// mark a few random cells as .active. Each active cell shows its
+// corresponding slice of the Genesis artwork — bg-size + bg-position set
+// inline based on the cell's row/col. Result: active cells form windows
+// to specific fragments of the original piece, default cells are invisible
+// (bone, matching grid bg). Counts: 1 / 3 / 10 (per design spec).
 (function populateHierarchyGrids() {
   function pickRandomIndices(count, total) {
     const indices = new Set();
     while (indices.size < count) indices.add(Math.floor(Math.random() * total));
     return [...indices];
   }
-  function markActive(cells, count) {
+  function markActiveSliced(cells, count, gridSize) {
     if (!cells.length) return;
+    const denom = gridSize - 1;
     pickRandomIndices(count, cells.length).forEach((idx) => {
-      cells[idx]?.classList.add("active");
+      const cell = cells[idx];
+      if (!cell) return;
+      cell.classList.add("active");
+      // Compute which 1/(gridSize²) slice of the artwork this cell shows
+      const col = idx % gridSize;
+      const row = Math.floor(idx / gridSize);
+      const xPct = denom > 0 ? (col / denom) * 100 : 50;
+      const yPct = denom > 0 ? (row / denom) * 100 : 50;
+      cell.style.backgroundPosition = `${xPct}% ${yPct}%`;
+      cell.style.backgroundSize = `${gridSize * 100}% ${gridSize * 100}%`;
     });
   }
 
-  // Tier 1 — 9 cells (already inline in HTML), mark 1 active
+  // Tier 1 — 9 cells (already inline in HTML), 1 active
   const t1Grid = document.querySelector(".tier-card.t1 .grid-vis");
-  if (t1Grid) markActive(t1Grid.querySelectorAll("span"), 1);
+  if (t1Grid) markActiveSliced(t1Grid.querySelectorAll("span"), 1, 3);
 
-  // Tier 2 — 81 cells, mark 3 active
+  // Tier 2 — 81 cells, 3 active
   const t2 = document.getElementById("t2grid");
   if (t2) {
     for (let i = 0; i < 81; i++) t2.appendChild(document.createElement("span"));
-    markActive(t2.querySelectorAll("span"), 3);
+    markActiveSliced(t2.querySelectorAll("span"), 3, 9);
   }
 
-  // Tier 3 — 900 cells, mark 10 active
+  // Tier 3 — 900 cells, 10 active
   const t3 = document.getElementById("t3grid");
   if (t3) {
     for (let i = 0; i < 900; i++) t3.appendChild(document.createElement("span"));
-    markActive(t3.querySelectorAll("span"), 10);
+    markActiveSliced(t3.querySelectorAll("span"), 10, 30);
   }
 })();
 

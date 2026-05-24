@@ -570,39 +570,29 @@ body {
 }
 .tier-card .grid-vis {
   display: grid;
-  gap: 1px;
+  gap: 0;                                        /* tight grid for clean slicing */
   width: 100%;
   aspect-ratio: 1 / 1;
-  padding: 1px;
+  background: var(--bone);                       /* default canvas — same as card bg */
+  border: 1px solid var(--line-strong);
   border-radius: 2px;
-  position: relative;
-  background-color: var(--line);                 /* fallback color in cell gaps */
-  background-image: url('genesis-bg.webp');      /* Genesis #0 artwork peek through default cells */
-  background-size: cover;
-  background-position: center;
   overflow: hidden;
-}
-/* Cream wash dampens the artwork — keeps editorial mood while remaining visible */
-.tier-card .grid-vis::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(245, 241, 232, 0.42);
-  pointer-events: none;
-  z-index: 1;
 }
 .tier-card.t1 .grid-vis { grid-template-columns: repeat(3, 1fr); }
 .tier-card.t2 .grid-vis { grid-template-columns: repeat(9, 1fr); }
-.tier-card.t3 .grid-vis { grid-template-columns: repeat(30, 1fr); gap: 0.5px; }
+.tier-card.t3 .grid-vis { grid-template-columns: repeat(30, 1fr); }
 .tier-card .grid-vis span {
-  position: relative;
-  z-index: 2;
-  background: var(--cobalt);
-  opacity: 0.10;                                 /* nearly transparent — artwork shows through */
-  transition: opacity 0.3s ease;
+  background-color: var(--bone);                 /* invisible — blends with grid */
+  aspect-ratio: 1 / 1;
+  transition: background-color 0.3s ease;
 }
+/* Active cells become "windows" showing their corresponding slice of the
+   Genesis artwork. bg-image + bg-size + bg-position set inline by JS per
+   cell, so each active cell shows EXACTLY its fragment of the original. */
 .tier-card .grid-vis span.active {
-  opacity: 1.0;                                  /* full cobalt — represents a real fragment */
+  background-color: transparent;
+  background-image: url('genesis-bg.webp');
+  background-repeat: no-repeat;
 }
 
 .hierarchy-caption {
