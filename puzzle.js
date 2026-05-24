@@ -25,7 +25,7 @@ const IMG = "genesis-bg.webp";
 
 /** Difficulty presets. `label`/`sub` feed the selector buttons. */
 const DIFFICULTIES = [
-  { n: 3, label: "3 × 3", sub: "9 pieces · Tier 1" },
+  { n: 3, label: "3 × 3", sub: "9 pieces" },
   { n: 4, label: "4 × 4", sub: "16 pieces" },
   { n: 5, label: "5 × 5", sub: "25 pieces" },
 ];
