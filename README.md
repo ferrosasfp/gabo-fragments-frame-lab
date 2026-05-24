@@ -1,19 +1,17 @@
 # Gabo Fragments Frame Lab
 
-A non-commercial, community-built fan tool for **Gabo Fragments Society** NFT holders. Drop in a fragment id and get an azulejos-inspired museum frame with PNG / GIF / GLB / WebM exports — all rendered in your browser.
+A non-commercial, community-built fan tool for **Gabo Fragments Society** NFT holders. Drop in a token id and get an azulejos-inspired silver gallery frame with PNG / GIF / GLB / WebM exports — all rendered in your browser.
 
 ## What it does
 
-Pulls publicly available fragment artwork + metadata from OpenSea (ApeChain) — with IPFS gateway fallbacks — and renders an **ornate gold frame around a museum plaque** so any fragment can become a 3D-rendered exhibit piece. Export the artwork, the framed piece, a rotating GIF, a 3D GLB, or a high-resolution wallpaper.
+Pulls publicly available fragment artwork + metadata from OpenSea (ApeChain) — with IPFS gateway fallbacks — and renders a **polished silver gallery frame around an engraved silver plaque** so any fragment can become a 3D-rendered exhibit piece. Export the framed piece as a flat PNG, a rotating GIF, a 3D GLB, or an HD WebM clip.
 
 | Export | Format | Typical size |
 |---|---|---|
-| Artwork | PNG | flat NFT image |
-| Frame | PNG | 2x museum-framed render |
+| Frame | PNG | 2x silver-framed render |
 | Frame | GIF | 36-frame loop, ~2.5s |
 | Frame | GLB | 3D model, WebXR-ready |
 | Frame | WebM | HD video, transparent-friendly |
-| Wallpaper | PNG | iPhone / Android / iPad / FHD / QHD / 4K / 21:9 |
 
 Everything happens client-side — no server, no upload, no tracking, no AI calls at runtime.
 
@@ -61,7 +59,7 @@ The CSP allowlist in `vercel.json` covers OpenSea (`api.opensea.io`, `*.seadn.io
 
 ## Legal / non-affiliation
 
-This project is an **independent, non-commercial fan tool** built by a community member for other holders. It only renders publicly available on-chain token metadata into a decorative museum frame for personal use.
+This project is an **independent, non-commercial fan tool** built by a community member for other holders. It only renders publicly available on-chain token metadata into a decorative gallery frame for personal use.
 
 **It is NOT affiliated with, endorsed by, or sponsored by:**
 

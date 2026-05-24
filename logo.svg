@@ -3,10 +3,10 @@
     <clipPath id="gabo-clip">
       <circle cx="110" cy="110" r="106"/>
     </clipPath>
-    <linearGradient id="gabo-gold" x1="0" y1="0" x2="220" y2="220" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#e2b855"/>
-      <stop offset="0.5" stop-color="#c89b3c"/>
-      <stop offset="1" stop-color="#8a6d29"/>
+    <linearGradient id="gabo-silver" x1="0" y1="0" x2="220" y2="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e8eaef"/>
+      <stop offset="0.5" stop-color="#c0c4cc"/>
+      <stop offset="1" stop-color="#7a7e85"/>
     </linearGradient>
   </defs>
 
@@ -38,8 +38,8 @@
 
     <!-- G monogram — central, classical serif, in cobalt blue -->
     <g transform="translate(110, 122)">
-      <!-- Soft gold halo -->
-      <circle cx="0" cy="-10" r="46" fill="url(#gabo-gold)" opacity="0.18"/>
+      <!-- Soft silver halo -->
+      <circle cx="0" cy="-10" r="46" fill="url(#gabo-silver)" opacity="0.18"/>
       <text x="0" y="0" text-anchor="middle" font-family="'Cormorant Garamond', 'Playfair Display', Georgia, serif"
             font-size="116" font-weight="700" fill="#102d5a"
             letter-spacing="-2">G</text>
@@ -55,5 +55,5 @@
 
   <!-- Outer ring (ceramic edge) -->
   <circle cx="110" cy="110" r="106" fill="none" stroke="#1e4a8c" stroke-width="3"/>
-  <circle cx="110" cy="110" r="103" fill="none" stroke="#c89b3c" stroke-width="1" opacity="0.6"/>
+  <circle cx="110" cy="110" r="103" fill="none" stroke="#c0c4cc" stroke-width="1" opacity="0.6"/>
 </svg>

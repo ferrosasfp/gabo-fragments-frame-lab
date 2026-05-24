@@ -1,14 +1,13 @@
-/* Gabo Fragments Frame Lab — community museum-frame renderer
+/* Gabo Fragments Frame Lab — community gallery-frame renderer
  *
- * Three.js renders an ornate gold/wood museum frame with the Gabo Fragments
- * artwork inset, and a brass plaque below engraved with token info + fragment
+ * Three.js renders a polished silver gallery frame with the Gabo Fragments
+ * artwork inset, and a silver plaque below engraved with token info + fragment
  * tier. The same scene drives:
  *   - the live on-screen preview (looping rotation)
  *   - Frame PNG  (one frame, hi-res, at a flattering angle)
  *   - Frame GIF  (frames around a full rotation)
  *   - Frame WebM (MediaRecorder on canvas.captureStream)
  *   - Frame GLB  (GLTFExporter of the whole scene incl. artwork texture)
- * Artwork PNG is rendered separately as the raw NFT image.
  *
  * Data: OpenSea API v2 for ApeChain. Falls back to ApeChain RPC + IPFS
  * gateway race if OpenSea is unavailable / rate-limited.
@@ -343,16 +342,16 @@ function roundRectPath(ctx, x, y, w, h, r) {
 }
 
 /**
- * Render the museum frame FRONT.
+ * Render the gallery frame FRONT.
  *
- *   ┌─────────────────────────────────────┐   <- ornate gold/wood molding
+ *   ┌─────────────────────────────────────┐   <- polished silver molding
  *   │  ╔═══════════════════════════════╗  │
  *   │  ║                               ║  │
  *   │  ║       NFT ARTWORK             ║  │   (inset, with shadow)
  *   │  ║                               ║  │
  *   │  ║                               ║  │
  *   │  ╚═══════════════════════════════╝  │
- *   │  ─────── BRASS PLAQUE ─────────    │
+ *   │  ─────── SILVER PLAQUE ─────────    │
  *   │   GABO · FRAGMENTS SOCIETY          │
  *   │   Fragment #247 — Tier 3 (900)      │
  *   │   ApeChain · 0x3d36…80a2            │
@@ -363,14 +362,14 @@ function drawSlabFront(canvas, entry) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, W, H);
 
-  // ===== Frame outer molding (gold gradient with depth) =====
+  // ===== Frame outer molding (polished silver gradient with depth) =====
   // Base
   const baseGrad = ctx.createLinearGradient(0, 0, W, H);
-  baseGrad.addColorStop(0,    "#8a6d29");
-  baseGrad.addColorStop(0.25, "#c89b3c");
-  baseGrad.addColorStop(0.50, "#e2b855");
-  baseGrad.addColorStop(0.75, "#c89b3c");
-  baseGrad.addColorStop(1,    "#8a6d29");
+  baseGrad.addColorStop(0,    "#7a7e85");
+  baseGrad.addColorStop(0.25, "#c0c4cc");
+  baseGrad.addColorStop(0.50, "#e8eaef");
+  baseGrad.addColorStop(0.75, "#c0c4cc");
+  baseGrad.addColorStop(1,    "#7a7e85");
   ctx.fillStyle = baseGrad;
   ctx.fillRect(0, 0, W, H);
 
@@ -418,31 +417,31 @@ function drawSlabFront(canvas, entry) {
 
   // ===== Artwork mat (the bevel between frame and artwork) =====
   const matPad = Math.round(W * 0.012);
-  ctx.fillStyle = "#1a3050"; // deep cobalt — like a museum mat
+  ctx.fillStyle = "#1a3050"; // deep cobalt — like a gallery mat
   ctx.fillRect(artX - matPad, artY - matPad, artW + matPad * 2, artH + matPad * 2);
 
-  // Thin gold liner inside the mat
-  ctx.strokeStyle = "rgba(200,155,60,0.55)";
+  // Thin silver liner inside the mat
+  ctx.strokeStyle = "rgba(192,196,204,0.65)";
   ctx.lineWidth = 1.5;
   ctx.strokeRect(artX - matPad + 4, artY - matPad + 4, artW + matPad * 2 - 8, artH + matPad * 2 - 8);
 
   // ===== Artwork itself =====
   drawArtwork(ctx, artX, artY, artW, artH, entry);
 
-  // ===== Brass plaque below the artwork =====
+  // ===== Silver plaque below the artwork =====
   const plaqueX = Math.round(W * 0.16);
   const plaqueY = artY + artH + Math.round(H * 0.030);
   const plaqueW = W - plaqueX * 2;
   const plaqueH = Math.round(H * 0.09);
-  drawBrassPlaque(ctx, plaqueX, plaqueY, plaqueW, plaqueH, entry);
+  drawSilverPlaque(ctx, plaqueX, plaqueY, plaqueW, plaqueH, entry);
 
-  // ===== Spotlight from above — soft warm wash =====
+  // ===== Spotlight from above — soft cool wash for silver =====
   ctx.save();
   ctx.globalCompositeOperation = "screen";
   const spot = ctx.createRadialGradient(W / 2, -H * 0.12, W * 0.10, W / 2, H * 0.35, W * 0.85);
-  spot.addColorStop(0, "rgba(255, 245, 215, 0.45)");
-  spot.addColorStop(0.4, "rgba(255, 245, 215, 0.18)");
-  spot.addColorStop(1, "rgba(255, 245, 215, 0)");
+  spot.addColorStop(0, "rgba(240, 244, 252, 0.45)");
+  spot.addColorStop(0.4, "rgba(240, 244, 252, 0.18)");
+  spot.addColorStop(1, "rgba(240, 244, 252, 0)");
   ctx.fillStyle = spot;
   ctx.fillRect(0, 0, W, H);
   ctx.restore();
@@ -450,8 +449,8 @@ function drawSlabFront(canvas, entry) {
   // ===== Final outer frame highlight (top edge catches light) =====
   ctx.save();
   const topHL = ctx.createLinearGradient(0, 0, 0, H * 0.04);
-  topHL.addColorStop(0, "rgba(255, 248, 225, 0.65)");
-  topHL.addColorStop(1, "rgba(255, 248, 225, 0)");
+  topHL.addColorStop(0, "rgba(248, 250, 255, 0.70)");
+  topHL.addColorStop(1, "rgba(248, 250, 255, 0)");
   ctx.fillStyle = topHL;
   ctx.fillRect(0, 0, W, H * 0.04);
   ctx.restore();
@@ -470,19 +469,19 @@ function drawFrameOrnaments(ctx, W, H, FRAME_W, FRAME_H_TOP, PLAQUE_H) {
   // Inner darker outline of the frame (looks like a carved profile)
   ctx.save();
 
-  // Outer beveled edge — slightly lighter just inside the very edge
-  ctx.strokeStyle = "rgba(255, 245, 215, 0.55)";
+  // Outer beveled edge — bright silver gleam just inside the very edge
+  ctx.strokeStyle = "rgba(232, 234, 239, 0.65)";
   ctx.lineWidth = 2.5;
   ctx.strokeRect(2, 2, W - 4, H - 4);
 
-  // Mid darker line — the "valley" between two ridges of the moulding
-  ctx.strokeStyle = "rgba(80, 55, 18, 0.55)";
+  // Mid darker line — the "valley" between two ridges of the moulding (tarnished silver)
+  ctx.strokeStyle = "rgba(70, 75, 82, 0.55)";
   ctx.lineWidth = 1.5;
   const inset = Math.round(FRAME_W * 0.45);
   ctx.strokeRect(inset, inset * 0.7, W - inset * 2, H - inset * 1.4);
 
   // Inner bright ridge (catches light around the artwork window)
-  ctx.strokeStyle = "rgba(255, 245, 215, 0.7)";
+  ctx.strokeStyle = "rgba(232, 234, 239, 0.75)";
   ctx.lineWidth = 1.2;
   ctx.strokeRect(FRAME_W - 4, FRAME_H_TOP - 4, W - FRAME_W * 2 + 8, H - FRAME_H_TOP - PLAQUE_H - Math.round(H * 0.022) + 8);
 
@@ -504,8 +503,8 @@ function drawCornerFlourish(ctx, cx, cy, size, flipX = false, flipY = false) {
   if (flipX) ctx.scale(-1, 1);
   if (flipY) ctx.scale(1, -1);
 
-  // Dark engraving lines
-  ctx.strokeStyle = "rgba(60, 40, 12, 0.75)";
+  // Dark engraving lines (tarnished silver shading)
+  ctx.strokeStyle = "rgba(50, 55, 62, 0.75)";
   ctx.lineWidth = size * 0.04;
   ctx.lineCap = "round";
 
@@ -519,21 +518,21 @@ function drawCornerFlourish(ctx, cx, cy, size, flipX = false, flipY = false) {
   ctx.quadraticCurveTo(-size * 0.20, 0, -size * 0.45, size * 0.45);
   ctx.stroke();
 
-  // Small filled jewel center
+  // Small filled jewel center (cool silver)
   const jewelGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 0.20);
-  jewelGrad.addColorStop(0, "#e2b855");
-  jewelGrad.addColorStop(0.6, "#8a6d29");
-  jewelGrad.addColorStop(1, "#5a4818");
+  jewelGrad.addColorStop(0, "#e8eaef");
+  jewelGrad.addColorStop(0.6, "#7a7e85");
+  jewelGrad.addColorStop(1, "#4a4d54");
   ctx.fillStyle = jewelGrad;
   ctx.beginPath();
   ctx.arc(0, 0, size * 0.16, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "rgba(60, 40, 12, 0.85)";
+  ctx.strokeStyle = "rgba(50, 55, 62, 0.85)";
   ctx.lineWidth = size * 0.03;
   ctx.stroke();
 
   // Bright catchlight on the jewel (top-left)
-  ctx.fillStyle = "rgba(255, 248, 225, 0.7)";
+  ctx.fillStyle = "rgba(248, 250, 255, 0.75)";
   ctx.beginPath();
   ctx.arc(-size * 0.04, -size * 0.04, size * 0.04, 0, Math.PI * 2);
   ctx.fill();
@@ -544,16 +543,16 @@ function drawCornerFlourish(ctx, cx, cy, size, flipX = false, flipY = false) {
 function drawCenterCrest(ctx, cx, cy, w) {
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.strokeStyle = "rgba(60, 40, 12, 0.75)";
+  ctx.strokeStyle = "rgba(50, 55, 62, 0.75)";
   ctx.lineWidth = w * 0.015;
   ctx.lineCap = "round";
 
-  // Central rosette
+  // Central rosette (silver)
   const r = w * 0.18;
   const rosGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
-  rosGrad.addColorStop(0, "#e2b855");
-  rosGrad.addColorStop(0.7, "#8a6d29");
-  rosGrad.addColorStop(1, "#5a4818");
+  rosGrad.addColorStop(0, "#e8eaef");
+  rosGrad.addColorStop(0.7, "#7a7e85");
+  rosGrad.addColorStop(1, "#4a4d54");
   ctx.fillStyle = rosGrad;
   ctx.beginPath();
   ctx.arc(0, 0, r, 0, Math.PI * 2);
@@ -561,7 +560,7 @@ function drawCenterCrest(ctx, cx, cy, w) {
   ctx.stroke();
 
   // 8-pointed rays carved around
-  ctx.strokeStyle = "rgba(60, 40, 12, 0.6)";
+  ctx.strokeStyle = "rgba(50, 55, 62, 0.6)";
   ctx.lineWidth = w * 0.010;
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2;
@@ -586,7 +585,7 @@ function drawCenterCrest(ctx, cx, cy, w) {
   ctx.stroke();
 
   // Catchlight
-  ctx.fillStyle = "rgba(255, 248, 225, 0.55)";
+  ctx.fillStyle = "rgba(248, 250, 255, 0.6)";
   ctx.beginPath();
   ctx.arc(-r * 0.25, -r * 0.25, r * 0.18, 0, Math.PI * 2);
   ctx.fill();
@@ -595,7 +594,7 @@ function drawCenterCrest(ctx, cx, cy, w) {
 }
 
 function drawArtwork(ctx, x, y, w, h, entry) {
-  // Deep cobalt placeholder (museum mat color)
+  // Deep cobalt placeholder (gallery mat color)
   ctx.fillStyle = "#102d5a";
   ctx.fillRect(x, y, w, h);
 
@@ -626,8 +625,8 @@ function drawArtwork(ctx, x, y, w, h, entry) {
     ctx.drawImage(img, dX, dY, dW, dH);
     ctx.restore();
 
-    // Crisp 1px gold inner border around the artwork rectangle
-    ctx.strokeStyle = "rgba(200, 155, 60, 0.55)";
+    // Crisp 1px silver inner border around the artwork rectangle
+    ctx.strokeStyle = "rgba(192, 196, 204, 0.65)";
     ctx.lineWidth = 1.2;
     ctx.strokeRect(dX + 0.5, dY + 0.5, dW - 1, dH - 1);
   } else {
@@ -636,32 +635,32 @@ function drawArtwork(ctx, x, y, w, h, entry) {
     ctx.font = `500 ${Math.round(h * 0.028)}px 'JetBrains Mono', monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Type a fragment ID and click Enmarcar", x + w / 2, y + h / 2 - 14);
+    ctx.fillText("Type a token ID and click Frame it", x + w / 2, y + h / 2 - 14);
     ctx.font = `400 ${Math.round(h * 0.020)}px 'JetBrains Mono', monospace`;
     ctx.fillStyle = "rgba(255, 248, 222, 0.42)";
     ctx.fillText("Gabo Fragments Society · ApeChain · 0–990", x + w / 2, y + h / 2 + 16);
   }
 }
 
-function drawBrassPlaque(ctx, x, y, w, h, entry) {
+function drawSilverPlaque(ctx, x, y, w, h, entry) {
   ctx.save();
-  // Brass plate gradient
+  // Silver plate gradient (engraved appearance, polished sterling)
   const plate = ctx.createLinearGradient(0, y, 0, y + h);
-  plate.addColorStop(0, "#a07f30");
-  plate.addColorStop(0.45, "#d4a64a");
-  plate.addColorStop(0.55, "#e2b855");
-  plate.addColorStop(1, "#86691f");
+  plate.addColorStop(0, "#9aa0a8");
+  plate.addColorStop(0.45, "#d4d7dd");
+  plate.addColorStop(0.55, "#e8eaef");
+  plate.addColorStop(1, "#7a7e85");
   ctx.fillStyle = plate;
   roundRectPath(ctx, x, y, w, h, 4);
   ctx.fill();
 
-  // Plate border — dark engraving
-  ctx.strokeStyle = "rgba(60, 40, 12, 0.85)";
+  // Plate border — dark engraving (tarnished silver)
+  ctx.strokeStyle = "rgba(45, 50, 56, 0.85)";
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
   // Inner double engraved line
-  ctx.strokeStyle = "rgba(60, 40, 12, 0.5)";
+  ctx.strokeStyle = "rgba(45, 50, 56, 0.5)";
   ctx.lineWidth = 0.8;
   ctx.strokeRect(x + 4, y + 4, w - 8, h - 8);
 
@@ -675,14 +674,14 @@ function drawBrassPlaque(ctx, x, y, w, h, entry) {
     [x + w - screwOff, y + h - screwOff],
   ]) {
     const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, screwR);
-    sg.addColorStop(0, "#3a2810");
-    sg.addColorStop(1, "#5a4118");
+    sg.addColorStop(0, "#2a2d32");
+    sg.addColorStop(1, "#4a4d54");
     ctx.fillStyle = sg;
     ctx.beginPath();
     ctx.arc(sx, sy, screwR, 0, Math.PI * 2);
     ctx.fill();
     // slot
-    ctx.strokeStyle = "rgba(20,12,4,0.85)";
+    ctx.strokeStyle = "rgba(15,18,22,0.85)";
     ctx.lineWidth = 0.6;
     ctx.beginPath();
     ctx.moveTo(sx - screwR * 0.7, sy);
@@ -690,16 +689,16 @@ function drawBrassPlaque(ctx, x, y, w, h, entry) {
     ctx.stroke();
   }
 
-  // ===== Engraved text =====
+  // ===== Engraved text — deep cobalt for contrast against silver =====
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "center";
 
   // Title — Cormorant / serif (italic for elegance)
   const titleSize = Math.round(h * 0.26);
   ctx.font = `600 ${titleSize}px 'Cormorant Garamond', 'Playfair Display', Georgia, serif`;
-  ctx.fillStyle = "#2a1a05";
-  // Shadow for engraved depth
-  ctx.shadowColor = "rgba(255, 245, 200, 0.55)";
+  ctx.fillStyle = "#0d1d35";
+  // Shadow for engraved depth (cool silver highlight)
+  ctx.shadowColor = "rgba(248, 250, 255, 0.65)";
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 1;
   ctx.shadowBlur = 0;
@@ -710,7 +709,7 @@ function drawBrassPlaque(ctx, x, y, w, h, entry) {
   // Subtitle — fragment id + tier
   const subSize = Math.round(h * 0.18);
   ctx.font = `600 ${subSize}px 'Cinzel', 'Cormorant Garamond', serif`;
-  ctx.fillStyle = "#3a2810";
+  ctx.fillStyle = "#102d5a";
   const tier = entry ? entry.tier : null;
   const sub = entry
     ? (tier && tier.tier === 0
@@ -719,21 +718,21 @@ function drawBrassPlaque(ctx, x, y, w, h, entry) {
           ? `Fragment #${entry.id} · ${tier.label} (${tier.total})`
           : `Fragment #${entry.id}`)
     : "Fragment #---";
-  ctx.shadowColor = "rgba(255, 245, 200, 0.45)";
+  ctx.shadowColor = "rgba(248, 250, 255, 0.55)";
   ctx.shadowOffsetY = 1;
   ctx.fillText(sub, x + w / 2, y + titleSize + 4 + subSize + 6);
 
   // Provenance line (small mono) — chain + short contract
   const provSize = Math.round(h * 0.13);
   ctx.font = `500 ${provSize}px 'JetBrains Mono', monospace`;
-  ctx.fillStyle = "#2a1a05";
+  ctx.fillStyle = "#0d1d35";
   const cShort = GABO_FRAGMENTS.contract.slice(0, 6) + "…" + GABO_FRAGMENTS.contract.slice(-4);
   const prov = `ApeChain · ${cShort}`;
   ctx.fillText(prov, x + w / 2, y + titleSize + 4 + subSize + 6 + provSize + 6);
 
-  // Decorative diamond separator marks
+  // Decorative diamond separator marks (tarnished silver)
   ctx.shadowColor = "transparent";
-  ctx.fillStyle = "rgba(60, 40, 12, 0.7)";
+  ctx.fillStyle = "rgba(45, 50, 56, 0.7)";
   ctx.font = `600 ${Math.round(h * 0.14)}px 'Cormorant Garamond', serif`;
   ctx.fillText("◆", x + w * 0.10, y + h * 0.62);
   ctx.fillText("◆", x + w * 0.90, y + h * 0.62);
@@ -779,14 +778,14 @@ function init3D() {
   pmrem.compileEquirectangularShader();
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
-  // Lighting: warm museum spotlight from above, soft ambient + side fill
-  const key = new THREE.DirectionalLight(0xfff0d0, 1.25);
+  // Lighting: cool gallery spotlight from above, soft ambient + side fill
+  const key = new THREE.DirectionalLight(0xf6f8ff, 1.25);
   key.position.set(0.5, 5, 4);
   scene.add(key);
-  const fill = new THREE.DirectionalLight(0xe8d8b4, 0.55);
+  const fill = new THREE.DirectionalLight(0xdce0e8, 0.55);
   fill.position.set(-4, 1, 3);
   scene.add(fill);
-  scene.add(new THREE.AmbientLight(0xfff4dc, 0.35));
+  scene.add(new THREE.AmbientLight(0xeaeef5, 0.35));
 
   const slabGeom = new RoundedBoxGeometry(SLAB_W, SLAB_H, SLAB_D, 6, 0.015);
 
@@ -800,14 +799,15 @@ function init3D() {
   slabTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
   slabTexture.needsUpdate = true;
 
-  // Gold frame material — modest metalness, low roughness for that polished
-  // brass/gold glow without going full chrome.
+  // Silver frame material — polished sterling sheen: modestly higher metalness
+  // and lower roughness than a wood frame, without going full chrome.
   frontMaterial = new THREE.MeshPhysicalMaterial({
     map: slabTexture,
-    roughness: 0.42,
-    metalness: 0.55,
-    clearcoat: 0.6,
-    clearcoatRoughness: 0.15,
+    color: 0xc0c4cc,
+    roughness: 0.30,
+    metalness: 0.65,
+    clearcoat: 0.7,
+    clearcoatRoughness: 0.12,
     envMapIntensity: 1.15,
     side: THREE.FrontSide,
   });
@@ -935,23 +935,8 @@ function render2DPreview(t = 0) {
 // Exports
 // ============================================================================
 function requireCurrent() {
-  if (!current) throw new Error("Load a fragment first — type a token id and click Enmarcar.");
+  if (!current) throw new Error("Load a fragment first — type a token id and click Frame it.");
   return current;
-}
-
-// "Artwork PNG" — just the raw NFT image, not the frame.
-async function exportCardPNG() {
-  const e = requireCurrent();
-  const W = 1200, H = Math.round(W * (e.image.naturalHeight / e.image.naturalWidth));
-  const c = document.createElement("canvas");
-  c.width = W; c.height = H;
-  const ctx = c.getContext("2d");
-  ctx.imageSmoothingQuality = "high";
-  ctx.fillStyle = "#102d5a";
-  ctx.fillRect(0, 0, W, H);
-  ctx.drawImage(e.image, 0, 0, W, H);
-  downloadBlob(await canvasToBlob(c, "image/png"), `gabo-artwork-${e.id}.png`);
-  showToast("◆ artwork PNG saved");
 }
 
 async function exportSlabPNG() {
@@ -1139,11 +1124,11 @@ function render2DSlabFrame(target, t) {
 
   ctx.globalCompositeOperation = "screen";
   const cx = W / 2 + angle * W * 0.4;
-  const warm = ctx.createLinearGradient(cx - W * 0.2, 0, cx + W * 0.2, H);
-  warm.addColorStop(0.0, "rgba(255, 245, 200, 0)");
-  warm.addColorStop(0.5, "rgba(255, 245, 200, 0.25)");
-  warm.addColorStop(1.0, "rgba(255, 245, 200, 0)");
-  ctx.fillStyle = warm;
+  const cool = ctx.createLinearGradient(cx - W * 0.2, 0, cx + W * 0.2, H);
+  cool.addColorStop(0.0, "rgba(240, 244, 252, 0)");
+  cool.addColorStop(0.5, "rgba(240, 244, 252, 0.25)");
+  cool.addColorStop(1.0, "rgba(240, 244, 252, 0)");
+  ctx.fillStyle = cool;
   ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }
@@ -1249,10 +1234,11 @@ async function exportSlabGLB() {
     tex.needsUpdate = true;
     const mat = new THREE.MeshPhysicalMaterial({
       map: tex,
-      roughness: 0.42,
-      metalness: 0.55,
-      clearcoat: 0.6,
-      clearcoatRoughness: 0.15,
+      color: 0xc0c4cc,
+      roughness: 0.30,
+      metalness: 0.65,
+      clearcoat: 0.7,
+      clearcoatRoughness: 0.12,
     });
     mesh = new THREE.Mesh(geom, mat);
   }
@@ -1271,466 +1257,6 @@ async function exportSlabGLB() {
 }
 
 // ============================================================================
-// Wallpapers — device wallpapers at native resolution
-// ============================================================================
-
-const JSZIP_URL = "https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js";
-const JSZIP_SRI = "sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG";
-
-const WP_DEVICES = {
-  "desktop-fhd": { w: 1920, h: 1080, label: "FHD" },
-  "desktop-qhd": { w: 2560, h: 1440, label: "QHD" },
-  "desktop-4k":  { w: 3840, h: 2160, label: "4K" },
-  "ultrawide":   { w: 3440, h: 1440, label: "Ultrawide" },
-  "iphone":      { w: 1290, h: 2796, label: "iPhone" },
-  "android":     { w: 1440, h: 3120, label: "Android" },
-  "ipad":        { w: 2048, h: 2732, label: "iPad" },
-};
-
-const WP_STYLES = ["portrait", "studio", "poster", "field"];
-
-function rgbStr([r, g, b], a = 1) {
-  return a < 1 ? `rgba(${r},${g},${b},${a})` : `rgb(${r},${g},${b})`;
-}
-function relLuminance([r, g, b]) {
-  return 0.299 * r + 0.587 * g + 0.114 * b;
-}
-function rgbMix(c, target, t) {
-  return [
-    Math.round(c[0] * (1 - t) + target[0] * t),
-    Math.round(c[1] * (1 - t) + target[1] * t),
-    Math.round(c[2] * (1 - t) + target[2] * t),
-  ];
-}
-
-let wpLogoImg = null;
-function ensureWallpaperLogo() {
-  if (wpLogoImg) return Promise.resolve(wpLogoImg);
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => { wpLogoImg = img; resolve(img); };
-    img.onerror = () => resolve(null);
-    img.src = "./logo.svg";
-  });
-}
-
-function drawCollectionLogo(ctx, W, H, opts = {}) {
-  if (!wpLogoImg || !wpLogoImg.naturalWidth) return;
-  const isPortrait = H > W;
-  const S = Math.min(W, H);
-  const logoH = opts.size ?? (isPortrait ? S * 0.06 : S * 0.08);
-  const ar = wpLogoImg.naturalWidth / wpLogoImg.naturalHeight;
-  const logoW = logoH * ar;
-  const cx = opts.cx ?? W / 2;
-  const cy = opts.cy ?? H - S * 0.05 - logoH / 2;
-  ctx.save();
-  ctx.globalAlpha = opts.alpha ?? 1.0;
-  ctx.drawImage(wpLogoImg, cx - logoW / 2, cy - logoH / 2, logoW, logoH);
-  ctx.restore();
-}
-
-function sampleNftBackground(img) {
-  const sw = Math.min(96, Math.floor((img.naturalWidth || img.width) / 12));
-  const sh = Math.min(96, Math.floor((img.naturalHeight || img.height) / 12));
-  const W = img.naturalWidth || img.width;
-  const H = img.naturalHeight || img.height;
-
-  const sample = (sx, sy) => {
-    const c = document.createElement("canvas");
-    c.width = 1; c.height = 1;
-    const ctx = c.getContext("2d");
-    try {
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 1, 1);
-      const d = ctx.getImageData(0, 0, 1, 1).data;
-      return [d[0], d[1], d[2]];
-    } catch {
-      // Tainted canvas — image came from a CORS-less source; bail to neutral.
-      return [240, 235, 220];
-    }
-  };
-  const corners = [
-    sample(0, 0),
-    sample(W - sw, 0),
-    sample(0, H - sh),
-    sample(W - sw, H - sh),
-  ];
-
-  let maxDelta = 0;
-  for (let i = 0; i < corners.length; i++) {
-    for (let j = i + 1; j < corners.length; j++) {
-      const d =
-        Math.abs(corners[i][0] - corners[j][0]) +
-        Math.abs(corners[i][1] - corners[j][1]) +
-        Math.abs(corners[i][2] - corners[j][2]);
-      if (d > maxDelta) maxDelta = d;
-    }
-  }
-  const uniform = maxDelta < 30;
-
-  const avg = corners.reduce(
-    (acc, c) => [acc[0] + c[0], acc[1] + c[1], acc[2] + c[2]],
-    [0, 0, 0]
-  );
-  return {
-    color: [Math.round(avg[0] / 4), Math.round(avg[1] / 4), Math.round(avg[2] / 4)],
-    uniform,
-  };
-}
-
-// STYLE 1 — PORTRAIT — NFT bg extended (iPhone-first)
-function wpPortrait(ctx, W, H, entry) {
-  const img = entry.image;
-  const isPortrait = H > W;
-  const srcW = img.naturalWidth || img.width;
-  const srcH = img.naturalHeight || img.height;
-  const SRC = srcW / srcH;
-
-  const { color: bgColor, uniform } = sampleNftBackground(img);
-  const bg = uniform ? bgColor : rgbMix(bgColor, [240, 235, 220], 0.30);
-  ctx.fillStyle = rgbStr(bg);
-  ctx.fillRect(0, 0, W, H);
-
-  let nW, nH, nx, ny;
-  if (isPortrait) {
-    nW = W;
-    nH = nW / SRC;
-    const maxH = H * 0.86;
-    if (nH > maxH) { nH = maxH; nW = nH * SRC; }
-    nx = (W - nW) / 2;
-    ny = Math.round(H * 0.01);
-  } else {
-    nH = H;
-    nW = nH * SRC;
-    nx = Math.round(W * 0.06);
-    ny = 0;
-  }
-
-  ctx.drawImage(img, nx, ny, nW, nH);
-  drawCollectionLogo(ctx, W, H);
-}
-
-function wpStudio(ctx, W, H, entry) {
-  const img = entry.image;
-  const isPortrait = H > W;
-  const srcW = img.naturalWidth || img.width;
-  const srcH = img.naturalHeight || img.height;
-  const SRC = srcW / srcH;
-
-  const { color: bgColor, uniform } = sampleNftBackground(img);
-  const bg = uniform ? bgColor : rgbMix(bgColor, [240, 235, 220], 0.30);
-  ctx.fillStyle = rgbStr(bg);
-  ctx.fillRect(0, 0, W, H);
-
-  let nW, nH, nx, ny;
-  if (isPortrait) {
-    nW = W * 0.92;
-    nH = nW / SRC;
-    const maxH = H * 0.78;
-    if (nH > maxH) { nH = maxH; nW = nH * SRC; }
-    nx = (W - nW) / 2;
-    ny = (H - nH) / 2;
-  } else {
-    nH = H * 0.94;
-    nW = nH * SRC;
-    nx = (W - nW) / 2;
-    ny = (H - nH) / 2;
-  }
-
-  ctx.drawImage(img, nx, ny, nW, nH);
-  drawCollectionLogo(ctx, W, H);
-}
-
-function wpPoster(ctx, W, H, entry) {
-  const img = entry.image;
-  const isPortrait = H > W;
-  const S = Math.min(W, H);
-  const srcW = img.naturalWidth || img.width;
-  const srcH = img.naturalHeight || img.height;
-  const SRC = srcW / srcH;
-
-  const { color: bgColor, uniform } = sampleNftBackground(img);
-  const bg = uniform ? bgColor : rgbMix(bgColor, [240, 235, 220], 0.30);
-  ctx.fillStyle = rgbStr(bg);
-  ctx.fillRect(0, 0, W, H);
-
-  const lum = relLuminance(bg) / 255;
-  const textColor = lum < 0.50 ? [250, 247, 240] : [13, 29, 53];
-
-  let nW, nH, nx, ny;
-  let textY, textAlign;
-  if (isPortrait) {
-    nW = W;
-    nH = nW / SRC;
-    const maxH = H * 0.62;
-    if (nH > maxH) { nH = maxH; nW = nH * SRC; }
-    nx = (W - nW) / 2;
-    ny = Math.round(H * 0.01);
-    textY = ny + nH + S * 0.08;
-    textAlign = "center";
-  } else {
-    nH = H;
-    nW = nH * SRC;
-    nx = W - nW;
-    ny = 0;
-    textY = H * 0.50;
-    textAlign = "left";
-  }
-
-  ctx.drawImage(img, nx, ny, nW, nH);
-
-  const idText = `#${String(entry.id).padStart(3, "0")}`;
-  const targetH = isPortrait ? H * 0.12 : H * 0.26;
-  let fontSize = targetH / 0.72;
-  ctx.font = `600 ${fontSize}px 'Cormorant Garamond', 'Playfair Display', Georgia, serif`;
-  const maxW = isPortrait ? W * 0.86 : (W - nW) * 0.86;
-  let textW = ctx.measureText(idText).width;
-  if (textW > maxW) {
-    fontSize *= maxW / textW;
-    ctx.font = `600 ${fontSize}px 'Cormorant Garamond', 'Playfair Display', Georgia, serif`;
-  }
-
-  ctx.save();
-  ctx.textAlign = textAlign;
-  ctx.textBaseline = "alphabetic";
-  ctx.fillStyle = rgbStr(textColor, 0.94);
-  const textX = isPortrait ? W / 2 : Math.round(W * 0.06);
-  ctx.fillText(idText, textX, textY);
-  ctx.restore();
-
-  if (isPortrait) {
-    drawCollectionLogo(ctx, W, H, {
-      cx: W / 2,
-      cy: textY + S * 0.06,
-      size: S * 0.07,
-    });
-  } else {
-    drawCollectionLogo(ctx, W, H, {
-      cx: Math.round(W * 0.06) + S * 0.05,
-      cy: textY + S * 0.10,
-      size: S * 0.09,
-    });
-  }
-}
-
-function wpField(ctx, W, H, entry) {
-  const img = entry.image;
-  const isPortrait = H > W;
-  const srcW = img.naturalWidth || img.width;
-  const srcH = img.naturalHeight || img.height;
-  const SRC = srcW / srcH;
-
-  const { color: bgColor, uniform } = sampleNftBackground(img);
-  const bg = uniform ? bgColor : rgbMix(bgColor, [240, 235, 220], 0.30);
-  ctx.fillStyle = rgbStr(bg);
-  ctx.fillRect(0, 0, W, H);
-
-  let nW, nH, nx, ny;
-  if (isPortrait) {
-    nW = W * 0.86;
-    nH = nW / SRC;
-    const maxH = H * 0.66;
-    if (nH > maxH) { nH = maxH; nW = nH * SRC; }
-    nx = (W - nW) / 2;
-    ny = Math.round(H * 0.18);
-  } else {
-    nH = H * 0.84;
-    nW = nH * SRC;
-    nx = (W - nW) / 2;
-    ny = Math.round(H * 0.08);
-  }
-
-  ctx.drawImage(img, nx, ny, nW, nH);
-
-  const darkBg = rgbMix(bg, [0, 0, 0], 0.55);
-  const fall = ctx.createLinearGradient(0, ny + nH * 0.8, 0, H);
-  fall.addColorStop(0, rgbStr(bg, 0));
-  fall.addColorStop(1, rgbStr(darkBg, 0.85));
-  ctx.fillStyle = fall;
-  ctx.fillRect(0, ny + nH * 0.8, W, H - (ny + nH * 0.8));
-
-  drawCollectionLogo(ctx, W, H);
-}
-
-async function renderWallpaper(style, deviceKey, entry) {
-  const { w: W, h: H } = WP_DEVICES[deviceKey];
-  const c = document.createElement("canvas");
-  c.width = W;
-  c.height = H;
-  const ctx = c.getContext("2d");
-  ctx.imageSmoothingQuality = "high";
-
-  switch (style) {
-    case "portrait": wpPortrait(ctx, W, H, entry); break;
-    case "studio":   wpStudio(ctx, W, H, entry); break;
-    case "poster":   wpPoster(ctx, W, H, entry); break;
-    case "field":    wpField(ctx, W, H, entry); break;
-    default: throw new Error("Unknown wallpaper style: " + style);
-  }
-  return c;
-}
-
-let jszipLoading = null;
-function ensureJSZip() {
-  if (jszipLoading) return jszipLoading;
-  jszipLoading = new Promise((resolve, reject) => {
-    if (window.JSZip) return resolve();
-    const s = document.createElement("script");
-    s.src = JSZIP_URL;
-    s.async = true;
-    s.crossOrigin = "anonymous";
-    s.integrity = JSZIP_SRI;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("Failed to load or verify JSZip (SRI mismatch?)"));
-    document.head.appendChild(s);
-  });
-  return jszipLoading;
-}
-
-let wpState = { style: "portrait", device: "iphone" };
-let wpPreviewCanvas = null;
-let wpPreviewToken = 0;
-let wpFontsReady = false;
-
-async function updateWallpaperPreview() {
-  if (!current) return;
-  if (!wpFontsReady && document.fonts && document.fonts.ready) {
-    try { await document.fonts.ready; wpFontsReady = true; } catch {}
-  }
-  const myToken = ++wpPreviewToken;
-  const { w, h } = WP_DEVICES[wpState.device];
-  const meta = $("wpMeta");
-  if (meta) meta.textContent = `${w} × ${h} · ${wpState.style[0].toUpperCase() + wpState.style.slice(1)}`;
-
-  const full = await renderWallpaper(wpState.style, wpState.device, current);
-  if (myToken !== wpPreviewToken) return;
-  wpPreviewCanvas = full;
-
-  const previewEl = $("wpPreview");
-  if (!previewEl) return;
-  const wrap = previewEl.parentElement;
-  const wrapRect = wrap.getBoundingClientRect();
-  const maxDispW = Math.max(200, wrapRect.width);
-  const maxDispH = Math.max(160, Math.min(560, wrapRect.height - 40));
-
-  const ar = w / h;
-  let dW = maxDispW, dH = dW / ar;
-  if (dH > maxDispH) { dH = maxDispH; dW = dH * ar; }
-
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  previewEl.width = Math.round(dW * dpr);
-  previewEl.height = Math.round(dH * dpr);
-  previewEl.style.width = Math.round(dW) + "px";
-  previewEl.style.height = Math.round(dH) + "px";
-
-  const pctx = previewEl.getContext("2d");
-  pctx.imageSmoothingQuality = "high";
-  pctx.clearRect(0, 0, previewEl.width, previewEl.height);
-  pctx.drawImage(full, 0, 0, previewEl.width, previewEl.height);
-}
-
-function wpShowError(msg) {
-  const el = $("wpError");
-  if (!el) return;
-  if (!msg) { el.hidden = true; el.textContent = ""; return; }
-  el.hidden = false;
-  el.textContent = msg;
-  setTimeout(() => { if (el.textContent === msg) { el.hidden = true; el.textContent = ""; } }, 5000);
-}
-
-async function downloadWallpaperSingle() {
-  if (!current) return wpShowError("Load a fragment first");
-  setBusy(true);
-  setLoading(true, "rendering wallpaper…");
-  try {
-    const c = wpPreviewCanvas && wpPreviewCanvas.width === WP_DEVICES[wpState.device].w
-      ? wpPreviewCanvas
-      : await renderWallpaper(wpState.style, wpState.device, current);
-    const { w, h } = WP_DEVICES[wpState.device];
-    const blob = await canvasToBlob(c, "image/png");
-    downloadBlob(blob, `gabo-wallpaper-${current.id}-${wpState.style}-${w}x${h}.png`);
-    showToast(`◆ ${wpState.style} ${w}×${h} saved`);
-  } catch (err) {
-    console.error(err);
-    wpShowError(err.message || "Wallpaper export failed");
-  } finally {
-    setBusy(false);
-    setLoading(false);
-  }
-}
-
-async function downloadWallpaperAllSizes() {
-  if (!current) return wpShowError("Load a fragment first");
-  setBusy(true);
-  setLoading(true, "rendering all sizes…");
-  try {
-    await ensureJSZip();
-    const zip = new window.JSZip();
-    const folder = zip.folder(`gabo-${current.id}-${wpState.style}`);
-    for (const key of Object.keys(WP_DEVICES)) {
-      const { w, h } = WP_DEVICES[key];
-      setLoading(true, `${wpState.style} · ${w}×${h}…`);
-      const c = await renderWallpaper(wpState.style, key, current);
-      const blob = await canvasToBlob(c, "image/png");
-      folder.file(`gabo-${current.id}-${wpState.style}-${w}x${h}.png`, blob);
-    }
-    setLoading(true, "zipping…");
-    const out = await zip.generateAsync({ type: "blob", compression: "STORE" });
-    downloadBlob(out, `gabo-wallpapers-${current.id}-${wpState.style}.zip`);
-    showToast(`◆ ZIP saved — ${Object.keys(WP_DEVICES).length} sizes`);
-  } catch (err) {
-    console.error(err);
-    wpShowError(err.message || "ZIP export failed");
-  } finally {
-    setBusy(false);
-    setLoading(false);
-  }
-}
-
-function wireWallpaperUI() {
-  document.querySelectorAll('.wp-chips[data-group="style"] .wp-chip').forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const next = btn.dataset.style;
-      if (next === wpState.style) return;
-      wpState.style = next;
-      document.querySelectorAll('.wp-chips[data-group="style"] .wp-chip')
-        .forEach((b) => b.classList.toggle("active", b.dataset.style === next));
-      updateWallpaperPreview();
-    });
-  });
-
-  document.querySelectorAll('.wp-chips[data-group="device"] .wp-chip').forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const next = btn.dataset.device;
-      if (next === wpState.device) return;
-      wpState.device = next;
-      document.querySelectorAll('.wp-chips[data-group="device"] .wp-chip')
-        .forEach((b) => b.classList.toggle("active", b.dataset.device === next));
-      updateWallpaperPreview();
-    });
-  });
-
-  $("wpDownload")?.addEventListener("click", downloadWallpaperSingle);
-  $("wpDownloadAll")?.addEventListener("click", downloadWallpaperAllSizes);
-
-  let resizeTimer = null;
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      if (current) updateWallpaperPreview();
-    }, 220);
-  });
-}
-
-// Headless test hook
-window.__wp = {
-  renderWallpaper,
-  WP_DEVICES,
-  WP_STYLES,
-  current: () => current,
-  fragmentTier,
-};
-
-// ============================================================================
 // Load fragment flow
 // ============================================================================
 async function loadFragment(rawId) {
@@ -1744,13 +1270,12 @@ async function loadFragment(rawId) {
   }
 
   showError("");
-  setLoading(true, "buscando fragmento…");
+  setLoading(true, "loading fragment…");
   setBusy(true);
   try {
     const entry = await fetchFragment(id);
     current = entry;
     rerenderSlabTexture();
-    updateWallpaperPreview();
     const tierLabel = entry.tier.tier === 0 ? "Genesis" : entry.tier.label;
     showToast(`◆ Fragment #${id} · ${tierLabel} loaded in ${entry.loadMs}ms`);
   } catch (e) {
@@ -1784,7 +1309,6 @@ randomBtn.addEventListener("click", () => {
 });
 
 const exporters = {
-  "card-png":  { fn: exportCardPNG,  label: "exporting artwork png…" },
   "slab-png":  { fn: exportSlabPNG,  label: "exporting frame png…" },
   "slab-gif":  { fn: exportSlabGIF,  label: "rendering frame gif…" },
   "slab-glb":  { fn: exportSlabGLB,  label: "building 3D frame…" },
@@ -1833,10 +1357,6 @@ exportBtns.forEach((btn) => {
   }
 
   startAutoRotate();
-  wireWallpaperUI();
-  ensureWallpaperLogo().then(() => {
-    if (current) updateWallpaperPreview();
-  });
 
   // Default to Genesis (#0) on first load — most iconic piece
   tokenInput.value = "0";

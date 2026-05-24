@@ -1,6 +1,6 @@
 /* ===========================================================================
-   Gabo Fragments Frame Lab — museum exhibit renderer
-   Azulejos palette: cobalt blue ink + aged paper + ornate gold + terracotta.
+   Gabo Fragments Frame Lab — community gallery exhibit renderer
+   Azulejos palette: cobalt blue ink + aged paper + polished silver + terracotta.
    Elegant serif display (Cormorant Garamond + Cinzel for plaques), Inter body,
    JetBrains Mono for utility text.
    =========================================================================== */
@@ -20,13 +20,14 @@
   --terracotta:   #b85c3d;        /* warm contrast accent */
   --terracotta-bright: #d77a55;
   --terracotta-deep: #8a4128;
-  --gold:         #c89b3c;        /* ornate frame gold */
-  --gold-bright:  #e2b855;
-  --gold-deep:    #8a6d29;
+  --silver:        #c0c4cc;       /* polished sterling */
+  --silver-deep:   #7a7e85;       /* tarnished silver / darker rim */
+  --silver-bright: #e8eaef;       /* highlight gleam */
+  --pewter:        #9aa0a8;       /* mid-tone */
   --line:         rgba(26, 48, 80, 0.18);
   --line-strong:  rgba(26, 48, 80, 0.40);
   --shadow:       rgba(13, 29, 53, 0.20);
-  --shadow-gold:  rgba(200, 155, 60, 0.30);
+  --shadow-silver: rgba(122, 126, 133, 0.30);
 
   /* Type stack */
   --font-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
@@ -186,7 +187,7 @@ body::after {
   .lab-grid { grid-template-columns: 1fr; }
 }
 
-/* ===== Panels — paper cards with gold corner accent ===== */
+/* ===== Panels — paper cards with silver corner accent ===== */
 .panel {
   position: relative;
   background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
@@ -203,7 +204,7 @@ body::after {
   position: absolute;
   top: 0; left: 0;
   width: 18px; height: 18px;
-  background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold) 100%);
+  background: linear-gradient(135deg, var(--silver-bright) 0%, var(--silver) 100%);
   clip-path: polygon(0 0, 100% 0, 0 100%);
   border-top-left-radius: 8px;
 }
@@ -307,7 +308,7 @@ body::after {
   box-shadow: inset 0 0 12px rgba(30,74,140,0.10);
 }
 
-/* ===== Big CTA ("Enmarcar") — gold/cobalt elegant ===== */
+/* ===== Big CTA ("Frame it") — silver/cobalt elegant ===== */
 .btn-cta {
   display: flex; align-items: center; justify-content: center; gap: 12px;
   width: 100%; padding: 18px 24px;
@@ -339,8 +340,8 @@ body::after {
 .btn-cta .sparkle {
   font-family: var(--font-display);
   font-size: 22px;
-  color: var(--gold-bright);
-  text-shadow: 0 0 8px rgba(226, 184, 85, 0.5);
+  color: var(--silver-bright);
+  text-shadow: 0 0 8px rgba(232,234,239,0.5);
 }
 
 /* ===== Tier info panel — fragment hierarchy ===== */
@@ -376,8 +377,8 @@ body::after {
   color: var(--azulejo);
   letter-spacing: 0.02em;
 }
-.tier-pill.tier-0 { border-color: var(--gold); }
-.tier-pill.tier-0 .tier-k { color: var(--gold-deep); }
+.tier-pill.tier-0 { border-color: var(--silver); }
+.tier-pill.tier-0 .tier-k { color: var(--silver-deep); }
 .tier-pill.tier-1 .tier-k { color: var(--azulejo-deep); }
 .tier-pill.tier-2 .tier-k { color: var(--terracotta); }
 .tier-pill.tier-3 .tier-k { color: var(--azulejo); }
@@ -422,18 +423,18 @@ body::after {
   pointer-events: none;
 }
 .stage-bg::after {
-  /* Gallery corner ticks — gold */
+  /* Gallery corner ticks — silver */
   content: '';
   position: absolute; inset: 14px;
   background-image:
-    linear-gradient(var(--gold) 0 0),
-    linear-gradient(var(--gold) 0 0),
-    linear-gradient(var(--gold) 0 0),
-    linear-gradient(var(--gold) 0 0),
-    linear-gradient(var(--gold) 0 0),
-    linear-gradient(var(--gold) 0 0),
-    linear-gradient(var(--gold) 0 0),
-    linear-gradient(var(--gold) 0 0);
+    linear-gradient(var(--silver) 0 0),
+    linear-gradient(var(--silver) 0 0),
+    linear-gradient(var(--silver) 0 0),
+    linear-gradient(var(--silver) 0 0),
+    linear-gradient(var(--silver) 0 0),
+    linear-gradient(var(--silver) 0 0),
+    linear-gradient(var(--silver) 0 0),
+    linear-gradient(var(--silver) 0 0);
   background-repeat: no-repeat;
   background-size:
     16px 1px, 1px 16px,
@@ -461,18 +462,18 @@ body::after {
   border-radius: 4px;
   filter:
     drop-shadow(0 6px 12px rgba(13, 29, 53, 0.30))
-    drop-shadow(0 0 30px rgba(200, 155, 60, 0.20));
+    drop-shadow(0 0 30px rgba(192,196,204,0.20));
 }
 
-/* Floating sparkles around the frame — gold accent */
+/* Floating sparkles around the frame — silver accent */
 .stage-spark {
   position: absolute;
   z-index: 2;
   font-family: var(--font-display);
-  font-size: 22px; color: var(--gold); opacity: 0.55;
+  font-size: 22px; color: var(--silver); opacity: 0.55;
   pointer-events: none;
   animation: twinkle 5s ease-in-out infinite;
-  text-shadow: 0 0 12px rgba(200, 155, 60, 0.5);
+  text-shadow: 0 0 12px rgba(192,196,204,0.5);
 }
 @keyframes twinkle {
   0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.45; }
@@ -510,11 +511,11 @@ body::after {
   position: absolute;
   bottom: 22px; left: 50%; transform: translateX(-50%);
   z-index: 4;
-  background: var(--ink-strong); color: var(--gold-bright);
+  background: var(--ink-strong); color: var(--silver-bright);
   padding: 10px 18px; border-radius: 4px;
   font-family: var(--font-mono); font-size: 11px;
   font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--silver);
   box-shadow: 0 6px 18px rgba(13, 29, 53, 0.40);
   animation: toastIn 0.3s cubic-bezier(.2,.8,.2,1);
 }
@@ -581,19 +582,19 @@ body::after {
   font-weight: 500;
 }
 .export-btn[data-fmt="png"]  .ico { background: rgba(30,74,140,0.10); border-color: var(--azulejo); }
-.export-btn[data-fmt="png2"] .ico { background: rgba(200,155,60,0.18); border-color: var(--gold); }
+.export-btn[data-fmt="png2"] .ico { background: rgba(192,196,204,0.18); border-color: var(--silver); }
 .export-btn[data-fmt="glb"]  .ico { background: rgba(184,92,61,0.18); border-color: var(--terracotta); }
 .export-btn[data-fmt="gif"]  .ico { background: rgba(30,74,140,0.18); border-color: var(--azulejo-deep); }
-.export-btn[data-fmt="webm"] .ico { background: rgba(200,155,60,0.30); border-color: var(--gold-deep); }
+.export-btn[data-fmt="webm"] .ico { background: rgba(192,196,204,0.30); border-color: var(--silver-deep); }
 
 .tip {
   margin-top: 18px; padding: 14px;
-  background: rgba(200, 155, 60, 0.08);
-  border: 1px dashed var(--gold-deep); border-radius: 4px;
+  background: rgba(192,196,204,0.08);
+  border: 1px dashed var(--silver-deep); border-radius: 4px;
 }
 .tip-label {
   font-family: var(--font-mono); font-size: 10px;
-  color: var(--gold-deep); text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--silver-deep); text-transform: uppercase; letter-spacing: 0.16em;
   margin-bottom: 6px; font-weight: 700;
 }
 .tip-body {
@@ -622,7 +623,7 @@ body::after {
   position: absolute;
   top: 0; left: 0;
   width: 3px; height: 100%;
-  background: linear-gradient(180deg, var(--gold) 0%, transparent 100%);
+  background: linear-gradient(180deg, var(--silver) 0%, transparent 100%);
   opacity: 0.6;
 }
 .stat:last-child { border-right: 0; }
@@ -669,155 +670,6 @@ body::after {
   color: var(--terracotta);
 }
 .footer a { color: var(--ink); }
-
-/* ===== Wallpaper Lab ===== */
-.wp-panel {
-  margin-top: 28px;
-}
-.wp-row {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-}
-.wp-label {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--azulejo);
-  flex: 0 0 64px;
-  padding-top: 9px;
-}
-.wp-chips {
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch;
-  flex: 1 1 0;
-}
-.wp-sep {
-  display: inline-block;
-  width: 1px;
-  background: var(--line-strong);
-  margin: 4px 8px;
-  align-self: stretch;
-}
-.wp-chip {
-  font-family: var(--font-mono);
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  background: var(--paper);
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  padding: 9px 13px;
-  cursor: pointer;
-  transition: all 0.18s ease;
-  display: inline-flex; flex-direction: column; align-items: center; gap: 2px;
-  line-height: 1.15;
-}
-.wp-chip small {
-  font-size: 9px; font-weight: 500;
-  letter-spacing: 0.08em;
-  color: var(--ink-soft);
-  text-transform: none;
-  opacity: 0.7;
-}
-.wp-chip:hover {
-  border-color: var(--azulejo);
-  color: var(--ink);
-  transform: translateY(-1px);
-}
-.wp-chip.active {
-  background: var(--azulejo);
-  border-color: var(--azulejo-deep);
-  color: var(--paper);
-  box-shadow: 0 0 0 1px var(--azulejo), inset 0 1px 0 rgba(255,255,255,0.18);
-}
-.wp-chip.active small {
-  color: rgba(255, 248, 222, 0.85);
-}
-
-.wp-preview-wrap {
-  position: relative;
-  margin: 14px 0 18px 0;
-  padding: 18px;
-  background: repeating-linear-gradient(45deg, #f3eee1 0 22px, #ece6d2 22px 44px);
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  min-height: 320px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.wp-preview {
-  max-width: 100%;
-  max-height: 540px;
-  display: block;
-  border-radius: 6px;
-  box-shadow:
-    0 0 0 2px rgba(200, 155, 60, 0.45),
-    0 0 60px rgba(13, 29, 53, 0.20),
-    0 20px 50px rgba(13, 29, 53, 0.30);
-  background: var(--paper);
-}
-.wp-meta {
-  position: absolute;
-  top: 6px; right: 12px;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--ink-soft);
-  text-transform: uppercase;
-  background: var(--paper);
-  padding: 4px 10px;
-  border-radius: 3px;
-  border: 1px solid var(--line);
-}
-
-.wp-actions {
-  display: flex;
-  gap: 12px;
-  align-items: stretch;
-  flex-wrap: wrap;
-}
-.wp-cta {
-  flex: 1 1 auto;
-  min-width: 260px;
-}
-.wp-zip {
-  flex: 0 1 auto;
-  background: var(--paper);
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  padding: 0 22px;
-  color: var(--ink);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.18s ease;
-}
-.wp-zip:hover {
-  border-color: var(--azulejo);
-  color: var(--azulejo);
-  transform: translateY(-1px);
-}
-.wp-zip:disabled,
-.wp-cta:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-@media (max-width: 720px) {
-  .wp-label { flex: 0 0 100%; padding-top: 0; margin-bottom: 4px; }
-  .wp-chip { padding: 7px 10px; }
-  .wp-cta { min-width: 100%; }
-  .wp-preview { max-height: 420px; }
-}
 
 /* ===== Reduced motion ===== */
 @media (prefers-reduced-motion: reduce) {

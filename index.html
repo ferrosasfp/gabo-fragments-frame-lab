@@ -3,23 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gabo Fragments Frame Lab · Museum Exhibit</title>
+    <title>Frame Lab · Community Exhibit for Gabo Fragments Society</title>
     <meta
       name="description"
-      content="Turn any Gabo Fragments Society NFT into a museum-framed exhibit piece. Azulejos palette, ornate gold frame, engraved brass plaque. Export as PNG, GIF, WebM, or GLB."
+      content="Turn any Gabo Fragments Society NFT into a community-curated gallery frame. Preview, rotate in 3D, export as PNG or GLB."
     />
     <meta name="theme-color" content="#faf7f0" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Gabo Fragments Frame Lab" />
-    <meta property="og:description" content="Frame any Gabo Fragments Society piece as a museum exhibit. Community fan tool, ApeChain." />
+    <meta property="og:description" content="Frame any Gabo Fragments Society piece as a community exhibit. Community fan tool, ApeChain." />
     <meta property="og:image" content="logo.svg" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Gabo Fragments Frame Lab" />
-    <meta name="twitter:description" content="Frame any Gabo Fragments Society piece as a museum exhibit. Community fan tool, ApeChain." />
+    <meta name="twitter:description" content="Frame any Gabo Fragments Society piece as a community exhibit. Community fan tool, ApeChain." />
 
     <link rel="icon" type="image/svg+xml" href="logo.svg" />
 
@@ -66,7 +66,7 @@
         </g>
       </svg>
       <svg class="ornament" style="bottom: 12%; left: 8%; width: 72px; height: 72px; animation-delay: -11s;" viewBox="0 0 72 72">
-        <g fill="none" stroke="#c89b3c" stroke-width="1.2" opacity="0.55">
+        <g fill="none" stroke="#c0c4cc" stroke-width="1.2" opacity="0.55">
           <rect x="14" y="14" width="44" height="44" rx="2"/>
           <rect x="20" y="20" width="32" height="32" rx="2" stroke-dasharray="2 3"/>
         </g>
@@ -85,11 +85,11 @@
             <span>Frame Lab · Gabo</span>
           </div>
           <div class="center-tag">
-            Galería · Fragmento · <span class="serif-bg">Marco</span>
+            Gallery · Fragment · <span class="serif-bg">Frame</span>
           </div>
           <div class="top-meta">
             <span class="pill">● ApeChain</span>
-            <span class="top-meta-text">Museum Lab · 2026</span>
+            <span class="top-meta-text">Community Exhibit · 2026</span>
           </div>
         </header>
 
@@ -98,15 +98,15 @@
           <!-- LEFT: Controls -->
           <section class="panel" aria-label="Fragment input">
             <div class="panel-head">
-              <span><span class="num">1</span><span class="panel-head-label">Fragmento</span></span>
+              <span><span class="num">1</span><span class="panel-head-label">Fragment</span></span>
               <span class="right">
                 <span class="led"></span>
-                <span class="led" style="background: #c89b3c; animation-delay: 0.5s;"></span>
+                <span class="led" style="background: #c0c4cc; animation-delay: 0.5s;"></span>
               </span>
             </div>
 
             <div class="field">
-              <label for="collection">Colección</label>
+              <label for="collection">Collection</label>
               <div class="seg" role="tablist">
                 <button class="seg-btn active" data-collection="gabo" role="tab" aria-selected="true" id="collection">
                   ◆ GABO FRAGMENTS
@@ -115,7 +115,7 @@
             </div>
 
             <div class="field">
-              <label for="tokenInput">Fragment ID</label>
+              <label for="tokenInput">Token ID</label>
               <div class="token-row">
                 <input
                   id="tokenInput"
@@ -143,7 +143,7 @@
             <div class="field">
               <button class="btn-cta" id="frameItBtn">
                 <span class="sparkle">◆</span>
-                <span>Enmarcar</span>
+                <span>Frame it</span>
                 <span class="sparkle">◆</span>
               </button>
             </div>
@@ -151,7 +151,7 @@
             <p class="dock-error" id="dockError" hidden></p>
 
             <div class="tier-info">
-              <div class="tier-label">Jerarquía</div>
+              <div class="tier-label">Hierarchy</div>
               <div class="tier-grid">
                 <span class="tier-pill tier-0"><span class="tier-k">#0</span> Genesis</span>
                 <span class="tier-pill tier-1"><span class="tier-k">1·9</span> Tier 1</span>
@@ -162,7 +162,7 @@
           </section>
 
           <!-- CENTER: Frame preview -->
-          <section class="card-stage" id="stage" aria-label="Museum frame preview">
+          <section class="card-stage" id="stage" aria-label="Frame preview">
             <div class="stage-bg" aria-hidden="true"></div>
 
             <span class="stage-spark" style="top: 10%; left: 10%;" aria-hidden="true">◆</span>
@@ -171,11 +171,11 @@
             <span class="stage-spark" style="bottom: 12%; right: 10%; animation-delay: 0.5s;" aria-hidden="true">◆</span>
 
             <div class="slab-wrap">
-              <canvas id="slabCanvas" class="slab-canvas" aria-label="Museum-framed Gabo Fragments artwork"></canvas>
+              <canvas id="slabCanvas" class="slab-canvas" aria-label="Silver-framed Gabo Fragments artwork"></canvas>
             </div>
 
             <div class="stage-loading" id="stageLoading" hidden>
-              <span class="loading-bubble" id="loadingLabel">cargando…</span>
+              <span class="loading-bubble" id="loadingLabel">loading…</span>
             </div>
             <div class="stage-toast" id="stageToast" hidden></div>
           </section>
@@ -184,22 +184,15 @@
           <section class="panel" aria-label="Export">
             <div class="panel-head">
               <span><span class="num">2</span><span class="panel-head-label">Export</span></span>
-              <span class="right"><span class="led" style="background: #c89b3c;"></span></span>
+              <span class="right"><span class="led" style="background: #c0c4cc;"></span></span>
             </div>
 
             <div class="export-grid">
-              <button class="export-btn btn" data-export="card-png" data-fmt="png">
-                <span class="ico">PNG</span>
-                <span>
-                  Obra PNG
-                  <div class="meta">Artwork flat · 1200×1680</div>
-                </span>
-              </button>
-              <button class="export-btn btn" data-export="slab-png" data-fmt="png2">
+              <button class="export-btn btn" data-export="slab-png" data-fmt="png">
                 <span class="ico">PNG</span>
                 <span>
                   Frame PNG
-                  <div class="meta">Marco completo · 2x</div>
+                  <div class="meta">Full frame · 2x</div>
                 </span>
               </button>
               <button class="export-btn btn" data-export="slab-glb" data-fmt="glb">
@@ -213,78 +206,25 @@
                 <span class="ico">GIF</span>
                 <span>
                   Frame GIF
-                  <div class="meta">Rotación · 2.5s loop</div>
+                  <div class="meta">Rotation · 2.5s loop</div>
                 </span>
               </button>
               <button class="export-btn btn" data-export="slab-webm" data-fmt="webm">
                 <span class="ico">WEBM</span>
                 <span>
                   Frame WebM
-                  <div class="meta">HD · museum spotlight</div>
+                  <div class="meta">HD · gallery spotlight</div>
                 </span>
               </button>
             </div>
 
             <div class="tip">
               <div class="tip-label">↳ Tip</div>
-              <div class="tip-body">Elegí un Fragment ID, tocá <b>Enmarcar</b>, y exportá en el formato que quieras. Made with love for the Society.</div>
+              <div class="tip-body">Pick a Token ID, tap <b>Frame it</b>, then export in whichever format you want. Made with love for the Society.</div>
             </div>
           </section>
 
         </main>
-
-        <!-- Wallpapers -->
-        <section class="wp-panel panel" id="wallpaper" aria-label="Wallpapers">
-          <div class="panel-head">
-            <span><span class="num">3</span><span class="panel-head-label">Wallpaper Lab</span></span>
-            <span class="right">
-              <span class="led" style="background: #c89b3c;"></span>
-              <span class="led" style="background: #1e4a8c; animation-delay: 0.4s;"></span>
-            </span>
-          </div>
-
-          <div class="wp-row">
-            <div class="wp-label">Estilo</div>
-            <div class="wp-chips" data-group="style">
-              <button class="wp-chip active" data-style="portrait" type="button">Top<small>head in clock zone</small></button>
-              <button class="wp-chip" data-style="studio" type="button">Centro<small>fully visible</small></button>
-              <button class="wp-chip" data-style="poster" type="button">Poster<small>+ token id</small></button>
-              <button class="wp-chip" data-style="field" type="button">Galería<small>+ floor falloff</small></button>
-            </div>
-          </div>
-
-          <div class="wp-row">
-            <div class="wp-label">Device</div>
-            <div class="wp-chips" data-group="device">
-              <button class="wp-chip active" data-device="iphone" type="button">iPhone<small>1290×2796</small></button>
-              <button class="wp-chip" data-device="android" type="button">Android<small>1440×3120</small></button>
-              <button class="wp-chip" data-device="ipad" type="button">iPad<small>2048×2732</small></button>
-              <span class="wp-sep" aria-hidden="true"></span>
-              <button class="wp-chip" data-device="desktop-fhd" type="button">FHD<small>1920×1080</small></button>
-              <button class="wp-chip" data-device="desktop-qhd" type="button">QHD<small>2560×1440</small></button>
-              <button class="wp-chip" data-device="desktop-4k" type="button">4K<small>3840×2160</small></button>
-              <button class="wp-chip" data-device="ultrawide" type="button">21:9<small>3440×1440</small></button>
-            </div>
-          </div>
-
-          <div class="wp-preview-wrap" id="wpPreviewWrap">
-            <canvas id="wpPreview" class="wp-preview" aria-label="Wallpaper preview"></canvas>
-            <div class="wp-meta mono" id="wpMeta">— · —</div>
-          </div>
-
-          <div class="wp-actions">
-            <button class="btn-cta wp-cta" id="wpDownload" type="button">
-              <span class="sparkle">◆</span>
-              <span>Bajar wallpaper</span>
-              <span class="sparkle">◆</span>
-            </button>
-            <button class="btn-secondary wp-zip" id="wpDownloadAll" type="button">
-              <span>↓ ZIP todos los tamaños (este estilo)</span>
-            </button>
-          </div>
-
-          <p class="dock-error" id="wpError" hidden></p>
-        </section>
 
         <!-- Stats strip -->
         <div class="stats">
@@ -293,7 +233,7 @@
             <div class="k">Fragments Minted</div>
           </div>
           <div class="stat">
-            <div class="v">5<span class="swirl">+</span></div>
+            <div class="v">4<span class="swirl">+</span></div>
             <div class="k">Export Formats</div>
           </div>
           <div class="stat">
@@ -304,12 +244,12 @@
 
         <!-- Footer -->
         <footer class="footer">
-          <div class="row1">Hecho en Lisboa ◆ por la Society, para la Society</div>
+          <div class="row1">Made in Lisbon ◆ by the Society, for the Society</div>
           <div class="row2">
             &copy; <span id="footerYear">2026</span> · Independent, non-commercial fan tool by an NFT holder, for NFT holders.<br/>
             <strong>This project is NOT affiliated with, endorsed by, or sponsored by @thegaboeth, the Gabo Fragments Society team, OpenSea, ApeChain, or ApeFest.</strong>
             All trademarks, names and artwork are the property of their respective owners. This tool only renders publicly available
-            on-chain token metadata into a decorative museum frame for personal, non-commercial use by holders of their own NFTs.
+            on-chain token metadata into a decorative gallery frame for personal, non-commercial use by holders of their own NFTs.
           </div>
         </footer>
 

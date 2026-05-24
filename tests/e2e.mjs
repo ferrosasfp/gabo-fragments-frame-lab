@@ -44,34 +44,44 @@ for (const f of files) {
 console.log('\n[2] HTML structural checks');
 const html = readFileSync(resolve(ROOT, 'index.html'), 'utf8');
 const htmlChecks = [
-  { name: 'title is Gabo Frame Lab', re: /<title>[^<]*Gabo Fragments Frame Lab/ },
+  { name: 'title is Frame Lab', re: /<title>[^<]*Frame Lab/ },
   { name: 'has slabCanvas', re: /id="slabCanvas"/ },
   { name: 'has tokenInput', re: /id="tokenInput"/ },
   { name: 'has frameItBtn', re: /id="frameItBtn"/ },
-  { name: 'has export buttons', re: /data-export="card-png"/ },
-  { name: 'has wallpaper panel', re: /id="wallpaper"/ },
+  { name: 'has frame PNG export', re: /data-export="slab-png"/ },
+  { name: 'has GLB export', re: /data-export="slab-glb"/ },
+  { name: 'has GIF export', re: /data-export="slab-gif"/ },
+  { name: 'has WebM export', re: /data-export="slab-webm"/ },
+  { name: 'no wallpaper panel', re: /id="wallpaper"/, negate: true },
+  { name: 'no Spanish CTA "Enmarcar"', re: /Enmarcar/, negate: true },
+  { name: 'English CTA "Frame it"', re: />Frame it</ },
   { name: 'loads app.js module', re: /<script type="module" src="app\.js"/ },
   { name: 'loads styles.css', re: /href="styles\.css"/ },
   { name: 'importmap for three', re: /three@0\.160\.0/ },
   { name: 'preconnect OpenSea', re: /preconnect" href="https:\/\/api\.opensea\.io"/ },
   { name: 'non-affiliation disclaimer', re: /NOT affiliated/ },
-  { name: 'Enmarcar CTA in Spanish', re: /Enmarcar/ },
 ];
 for (const c of htmlChecks) {
-  c.re.test(html) ? pass(c.name) : fail(c.name);
+  const hit = c.re.test(html);
+  const ok = c.negate ? !hit : hit;
+  ok ? pass(c.name) : fail(c.name);
 }
 
-console.log('\n[3] CSS palette checks (azulejos)');
+console.log('\n[3] CSS palette checks (azulejos + silver)');
 const css = readFileSync(resolve(ROOT, 'styles.css'), 'utf8');
 const cssChecks = [
   { name: '--azulejo cobalt color defined', re: /--azulejo:\s*#1e4a8c/ },
-  { name: '--gold defined', re: /--gold:\s*#c89b3c/ },
+  { name: '--silver polished sterling defined', re: /--silver:\s*#c0c4cc/ },
+  { name: '--silver-deep defined', re: /--silver-deep:\s*#7a7e85/ },
+  { name: '--silver-bright defined', re: /--silver-bright:\s*#e8eaef/ },
   { name: '--terracotta defined', re: /--terracotta:/ },
   { name: '--ink cobalt blue', re: /--ink:\s*#1a3050/ },
   { name: '--bg aged paper', re: /--bg:\s*#faf7f0/ },
   { name: 'Cormorant Garamond font', re: /Cormorant Garamond/ },
   { name: 'Cinzel font for plaques', re: /Cinzel/ },
   { name: 'no smoke animations (azulejo theme)', re: /smoke/, negate: true },
+  { name: 'no --gold variable (silver palette)', re: /--gold/, negate: true },
+  { name: 'no .wp- selectors (wallpaper removed)', re: /\.wp-/, negate: true },
 ];
 for (const c of cssChecks) {
   const hit = c.re.test(css);
@@ -98,13 +108,18 @@ const appChecks = [
   { name: 'GLB export', re: /async function exportSlabGLB/ },
   { name: 'GIF export', re: /async function exportSlabGIF/ },
   { name: 'WebM export', re: /async function exportSlabWebM/ },
-  { name: 'museum frame drawing', re: /function drawSlabFront/ },
-  { name: 'brass plaque drawing', re: /function drawBrassPlaque/ },
+  { name: 'frame drawing', re: /function drawSlabFront/ },
+  { name: 'silver plaque drawing', re: /function drawSilverPlaque/ },
   { name: 'ornate corner flourishes', re: /function drawCornerFlourish/ },
-  { name: 'wallpaper devices include iPhone', re: /"iphone":\s*\{\s*w:\s*1290/ },
+  { name: 'silver material color hex', re: /color:\s*0xc0c4cc/ },
+  { name: 'no wallpaper module (WP_DEVICES removed)', re: /WP_DEVICES/, negate: true },
+  { name: 'no drawBrassPlaque (renamed to silver)', re: /drawBrassPlaque/, negate: true },
+  { name: 'no exportCardPNG (artwork PNG removed)', re: /exportCardPNG/, negate: true },
 ];
 for (const c of appChecks) {
-  c.re.test(app) ? pass(c.name) : fail(c.name);
+  const hit = c.re.test(app);
+  const ok = c.negate ? !hit : hit;
+  ok ? pass(c.name) : fail(c.name);
 }
 
 console.log('\n[5] vercel.json CSP allowlist');
