@@ -27,7 +27,6 @@ const GABO_FRAGMENTS = {
   chainId: 33139,
   minId: 0,
   maxId: 990,
-  openseaApi: "https://api.opensea.io/api/v2",
   rpc: "https://rpc.apechain.com/http",
   gateways: [
     // Only direct-serve gateways with CORS. dweb.link, nftstorage.link, w3s.link
@@ -244,21 +243,9 @@ function raceImageUrls(urls) {
   });
 }
 
-// Primary path: OpenSea v2 NFT endpoint. Returns { identifier, name, image_url, metadata_url, traits, ... }.
-async function fetchOpenSea(tokenId) {
-  const url = `${GABO_FRAGMENTS.openseaApi}/chain/${GABO_FRAGMENTS.chain}/contract/${GABO_FRAGMENTS.contract}/nfts/${tokenId}`;
-  const r = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!r.ok) {
-    if (r.status === 404) throw new Error(`Gabo Fragment #${tokenId} not indexed on OpenSea yet`);
-    if (r.status === 429) throw new Error("OpenSea rate-limited — try again in a minute");
-    throw new Error(`OpenSea HTTP ${r.status}`);
-  }
-  const json = await r.json();
-  if (!json.nft) throw new Error("OpenSea response missing nft");
-  return json.nft;
-}
-
-// Fallback path: read tokenURI(uint256) directly from ApeChain RPC.
+// Read tokenURI(uint256) directly from ApeChain RPC, then resolve metadata
+// + image via the IPFS gateway race. This is the only data path (OpenSea API
+// requires a key, so it is not used).
 async function fetchFromRpc(tokenId) {
   // tokenURI(uint256) selector = 0xc87b56dd
   const idHex = BigInt(tokenId).toString(16).padStart(64, "0");
