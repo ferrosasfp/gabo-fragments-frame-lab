@@ -366,7 +366,8 @@ function initPuzzle() {
         b.classList.toggle("active", on);
         b.setAttribute("aria-pressed", on ? "true" : "false");
       });
-      puzzle.shuffle(); // switching difficulty starts a fresh shuffled game
+      puzzle.n = activeN; // ← apply the selected grid size before shuffling
+      puzzle.shuffle();   // shuffle() rebuilds via setup(this.n) at the new size
     });
     if (d.n === activeN) btn.classList.add("active");
     diffButtons.set(d.n, btn);
