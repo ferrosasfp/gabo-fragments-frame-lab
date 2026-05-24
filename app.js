@@ -666,12 +666,14 @@ function init3D() {
   slabTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
   slabTexture.needsUpdate = true;
 
-  // Cobalt-ink matte material — reads as a modern gallery card, not metal
+  // Modern gallery card material — texture map provides full colors.
+  // color MUST be white (multiplier identity) so the map renders as authored.
+  // The cobalt frame border + cream mat are painted into the canvas texture itself.
   frontMaterial = new THREE.MeshPhysicalMaterial({
     map: slabTexture,
-    color: 0x1A1A1A,
-    metalness: 0.10,
-    roughness: 0.85,
+    color: 0xffffff,
+    metalness: 0.05,
+    roughness: 0.80,
     clearcoat: 0.0,
     envMapIntensity: 0.30,
     side: THREE.FrontSide,
