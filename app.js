@@ -30,11 +30,11 @@ const GABO_FRAGMENTS = {
   openseaApi: "https://api.opensea.io/api/v2",
   rpc: "https://rpc.apechain.com/http",
   gateways: [
+    "https://ipfs.io/ipfs",
     "https://gateway.pinata.cloud/ipfs",
     "https://dweb.link/ipfs",
     "https://nftstorage.link/ipfs",
     "https://w3s.link/ipfs",
-    "https://ipfs.io/ipfs",
   ],
 };
 
@@ -287,29 +287,22 @@ async function fetchFragment(id) {
   let fromCache = !!meta;
 
   if (!meta) {
+    // Direct path: ApeChain RPC + IPFS race (OpenSea API requires key, skipping it).
     try {
-      meta = await fetchOpenSea(tokenId);
-    } catch (openSeaErr) {
-      // Fallback to RPC + IPFS race
-      try {
-        meta = await fetchFromRpc(tokenId);
-        // Normalize to the OpenSea-like shape so downstream code is uniform
-        meta = {
-          identifier: tokenId,
-          name: meta.name || `Gabo Fragment #${tokenId}`,
-          description: meta.description || "",
-          image_url: meta.image || meta.image_url || "",
-          metadata_url: "",
-          traits: (meta.attributes || []).map((a) => ({
-            trait_type: a.trait_type, value: a.value,
-          })),
-          _via: "rpc",
-        };
-      } catch (rpcErr) {
-        throw new Error(
-          `Both OpenSea and ApeChain RPC failed for #${tokenId}: ${openSeaErr.message}; ${rpcErr.message}`
-        );
-      }
+      const rpcMeta = await fetchFromRpc(tokenId);
+      meta = {
+        identifier: tokenId,
+        name: rpcMeta.name || `Gabo Fragment #${tokenId}`,
+        description: rpcMeta.description || "",
+        image_url: rpcMeta.image || rpcMeta.image_url || "",
+        metadata_url: "",
+        traits: (rpcMeta.attributes || []).map((a) => ({
+          trait_type: a.trait_type, value: a.value,
+        })),
+        _via: "rpc",
+      };
+    } catch (rpcErr) {
+      throw new Error(`ApeChain RPC failed for #${tokenId}: ${rpcErr.message}`);
     }
     saveMetaToLS(tokenId, meta);
   }
