@@ -97,12 +97,39 @@ const dockError    = $("dockError");
 const footerYear   = $("footerYear");
 footerYear.textContent = new Date().getFullYear();
 
-// Populate hierarchy grids (81 cells + 900 cells — too noisy to inline in HTML)
+// Populate hierarchy grids (81 + 900 cells too noisy to inline in HTML) +
+// mark a few random cells as .active so they pop as solid cobalt over the
+// Genesis artwork background. Counts: 1 / 3 / 10 (per design spec).
 (function populateHierarchyGrids() {
+  function pickRandomIndices(count, total) {
+    const indices = new Set();
+    while (indices.size < count) indices.add(Math.floor(Math.random() * total));
+    return [...indices];
+  }
+  function markActive(cells, count) {
+    if (!cells.length) return;
+    pickRandomIndices(count, cells.length).forEach((idx) => {
+      cells[idx]?.classList.add("active");
+    });
+  }
+
+  // Tier 1 — 9 cells (already inline in HTML), mark 1 active
+  const t1Grid = document.querySelector(".tier-card.t1 .grid-vis");
+  if (t1Grid) markActive(t1Grid.querySelectorAll("span"), 1);
+
+  // Tier 2 — 81 cells, mark 3 active
   const t2 = document.getElementById("t2grid");
+  if (t2) {
+    for (let i = 0; i < 81; i++) t2.appendChild(document.createElement("span"));
+    markActive(t2.querySelectorAll("span"), 3);
+  }
+
+  // Tier 3 — 900 cells, mark 10 active
   const t3 = document.getElementById("t3grid");
-  if (t2) for (let i = 0; i < 81; i++) t2.appendChild(document.createElement("span"));
-  if (t3) for (let i = 0; i < 900; i++) t3.appendChild(document.createElement("span"));
+  if (t3) {
+    for (let i = 0; i < 900; i++) t3.appendChild(document.createElement("span"));
+    markActive(t3.querySelectorAll("span"), 10);
+  }
 })();
 
 // ============================================================================

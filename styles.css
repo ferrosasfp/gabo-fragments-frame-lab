@@ -573,19 +573,37 @@ body {
   gap: 1px;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: var(--line);
   padding: 1px;
   border-radius: 2px;
+  position: relative;
+  background-color: var(--line);                 /* fallback color in cell gaps */
+  background-image: url('genesis-bg.webp');      /* Genesis #0 artwork peek through default cells */
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+/* Cream wash dampens the artwork — keeps editorial mood while remaining visible */
+.tier-card .grid-vis::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(245, 241, 232, 0.42);
+  pointer-events: none;
+  z-index: 1;
 }
 .tier-card.t1 .grid-vis { grid-template-columns: repeat(3, 1fr); }
 .tier-card.t2 .grid-vis { grid-template-columns: repeat(9, 1fr); }
 .tier-card.t3 .grid-vis { grid-template-columns: repeat(30, 1fr); gap: 0.5px; }
 .tier-card .grid-vis span {
+  position: relative;
+  z-index: 2;
   background: var(--cobalt);
-  opacity: 0.78;
+  opacity: 0.10;                                 /* nearly transparent — artwork shows through */
+  transition: opacity 0.3s ease;
 }
-.tier-card.t2 .grid-vis span { opacity: 0.62; }
-.tier-card.t3 .grid-vis span { opacity: 0.45; }
+.tier-card .grid-vis span.active {
+  opacity: 1.0;                                  /* full cobalt — represents a real fragment */
+}
 
 .hierarchy-caption {
   font-family: var(--font-body);
