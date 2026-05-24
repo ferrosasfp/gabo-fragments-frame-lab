@@ -93,11 +93,13 @@ body {
   transition: color 0.15s;
 }
 .brand-icon {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
   vertical-align: middle;
-  /* Brand-color SVGs served from /opensea.svg + /x.svg — no fill override */
+  /* Brand-color SVGs (opensea.svg + x.svg + apechain.svg) — no fill override */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 .footer-col li a {
   display: inline-flex;
