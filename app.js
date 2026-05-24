@@ -47,14 +47,18 @@ const GIFJS_WORKER_SRI = "sha384-uL0SwIQSos1DfQU2KzlDbPuSz7Jwo+hmNPIhe86VJ+MWwyj
 
 // GFS palette in canvas-friendly hex strings
 const COLOR = {
-  cobalt:      "#1E3A6E",
-  cobaltDeep:  "#0F1F40",
-  cream:       "#F5F1E8",
-  cream2:      "#EDE6D5",
-  bone:        "#FFFCF5",
-  ink:         "#1A1A1A",
-  inkSoft:     "#555555",
-  tileBlue:    "#2A5BA0",
+  cobalt:       "#1E3A6E",
+  cobaltDeep:   "#0F1F40",
+  cobaltBright: "#2E5BB0",
+  cream:        "#F5F1E8",
+  cream2:       "#EDE6D5",
+  bone:         "#FFFCF5",
+  matCream:     "#FAF6EC",   // slightly warmer mat between liner and artwork
+  ink:          "#1A1A1A",
+  inkSoft:      "#555555",
+  tileBlue:     "#2A5BA0",
+  silver:       "#C0C4CC",   // polished silver liner (between cobalt frame and mat)
+  silverBone:   "#E8EAEF",   // plaque background (museum-card feel)
 };
 
 // Frame geometry — portrait orientation, like a hung painting (5:7 like a card)
@@ -357,18 +361,20 @@ function roundRectPath(ctx, x, y, w, h, r) {
 /**
  * Render the gallery card FRONT — modern, clean, editorial.
  *
- *   ┌─────────────────────────────────────┐   <- 1px cobalt outer line
- *   │ ┌─────────────────────────────────┐ │   <- 2px bone-white inner liner
- *   │ │ ╔═══════════════════════════╗   │ │
- *   │ │ ║                           ║   │ │   cream mat with very subtle
- *   │ │ ║       NFT ARTWORK         ║   │ │   azulejo tile motif at 4% opacity
- *   │ │ ║                           ║   │ │
- *   │ │ ╚═══════════════════════════╝   │ │
- *   │ │ ─────── PLAQUE ─────────────    │ │
- *   │ │  GABO FRAGMENTS SOCIETY         │ │
- *   │ │  FRAGMENT #247 · TIER 3 · 1/900 │ │
- *   │ │  APECHAIN · 0x3d36...80a2       │ │
- *   │ └─────────────────────────────────┘ │
+ *   ┌─────────────────────────────────────┐   <- SOLID COBALT frame body
+ *   │   (thin lighter cobalt strip top)   │      with subtle metallic highlight
+ *   │  ┌───────────────────────────────┐  │   <- 2px silver liner #C0C4CC
+ *   │  │ ╔═══════════════════════════╗ │  │   <- cream mat (breathing room)
+ *   │  │ ║                           ║ │  │
+ *   │  │ ║       NFT ARTWORK         ║ │  │
+ *   │  │ ║                           ║ │  │
+ *   │  │ ╚═══════════════════════════╝ │  │
+ *   │  │   ┌──── SILVER PLAQUE ────┐   │  │
+ *   │  │   │ GABO FRAGMENTS SOCIETY│   │  │   silver-bone background
+ *   │  │   │ FRAGMENT #247 · 1/900 │   │  │   deep cobalt text
+ *   │  │   │ APECHAIN · 0x3d36..a2 │   │  │
+ *   │  │   └───────────────────────┘   │  │
+ *   │  └───────────────────────────────┘  │
  *   └─────────────────────────────────────┘
  */
 function drawSlabFront(canvas, entry) {
@@ -376,15 +382,29 @@ function drawSlabFront(canvas, entry) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, W, H);
 
-  // ===== Card body — cream paper background =====
-  ctx.fillStyle = COLOR.cream;
+  // ===== Frame body — SOLID COBALT (high contrast vs typical artwork) =====
+  ctx.fillStyle = COLOR.cobalt;
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle tile motif over the cream (very low alpha — 4% opacity feel)
-  drawTileMotif(ctx, 0, 0, W, H, 0.04);
+  // Subtle metallic highlight: lighter cobalt strip at the top edge (~5% of height)
+  // Gradient from a brighter cobalt to the base cobalt — hint of dimensionality.
+  const highlightH = Math.round(H * 0.05);
+  const hg = ctx.createLinearGradient(0, 0, 0, highlightH);
+  hg.addColorStop(0, COLOR.cobaltBright);
+  hg.addColorStop(1, COLOR.cobalt);
+  ctx.fillStyle = hg;
+  ctx.fillRect(0, 0, W, highlightH);
 
-  // ===== 1px cobalt outer line =====
-  ctx.strokeStyle = COLOR.cobalt;
+  // Faint bottom shadow — opposite cue, very subtle
+  const shadowH = Math.round(H * 0.04);
+  const sg = ctx.createLinearGradient(0, H - shadowH, 0, H);
+  sg.addColorStop(0, "rgba(15, 31, 64, 0)");
+  sg.addColorStop(1, "rgba(15, 31, 64, 0.40)");
+  ctx.fillStyle = sg;
+  ctx.fillRect(0, H - shadowH, W, shadowH);
+
+  // ===== Crisp outer hairline (deep cobalt) =====
+  ctx.strokeStyle = COLOR.cobaltDeep;
   ctx.lineWidth = Math.max(1, W * 0.0014);
   ctx.strokeRect(
     ctx.lineWidth / 2,
@@ -393,29 +413,9 @@ function drawSlabFront(canvas, entry) {
     H - ctx.lineWidth,
   );
 
-  // ===== 2px bone-white inner liner =====
-  const linerInset = Math.round(W * 0.022);
-  const linerW = Math.max(2, W * 0.0028);
-  ctx.strokeStyle = COLOR.bone;
-  ctx.lineWidth = linerW;
-  ctx.strokeRect(
-    linerInset,
-    linerInset,
-    W - linerInset * 2,
-    H - linerInset * 2,
-  );
-  // very thin cobalt hairline OUTSIDE the bone liner for crispness
-  ctx.strokeStyle = "rgba(30, 58, 110, 0.30)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(
-    linerInset - linerW / 2 - 0.5,
-    linerInset - linerW / 2 - 0.5,
-    W - (linerInset - linerW / 2) * 2 + 1,
-    H - (linerInset - linerW / 2) * 2 + 1,
-  );
-
   // ===== Frame layout: artwork window + plaque =====
-  const FRAME_INSET = Math.round(W * 0.060);           // outer mat thickness
+  // Slightly thicker frame body now that it's dark, so it reads as a real frame.
+  const FRAME_INSET = Math.round(W * 0.075);           // cobalt frame thickness
   const PLAQUE_H    = Math.round(H * 0.13);            // plaque area below artwork
 
   const artX = FRAME_INSET;
@@ -423,14 +423,40 @@ function drawSlabFront(canvas, entry) {
   const artW = W - FRAME_INSET * 2;
   const artH = H - FRAME_INSET - PLAQUE_H - Math.round(H * 0.030);
 
-  // ===== Artwork mat — subtle cream-2 ring around the artwork hole =====
-  const matPad = Math.round(W * 0.014);
-  ctx.fillStyle = COLOR.cream2;
-  ctx.fillRect(artX - matPad, artY - matPad, artW + matPad * 2, artH + matPad * 2);
-  // thin cobalt rule around the mat
-  ctx.strokeStyle = "rgba(30, 58, 110, 0.22)";
+  // ===== Cream mat (breathing room around the artwork) =====
+  const matPad = Math.round(W * 0.020);
+  // Cover the whole inner area (artwork + plaque + space between) with cream mat.
+  const matX = artX - matPad;
+  const matY = artY - matPad;
+  const matW = artW + matPad * 2;
+  const matH = (PLAQUE_H + Math.round(H * 0.030) + artH) + matPad * 2;
+  ctx.fillStyle = COLOR.matCream;
+  ctx.fillRect(matX, matY, matW, matH);
+
+  // Very subtle tile motif on the cream mat (kept gentle so it doesn't compete)
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(matX, matY, matW, matH);
+  ctx.clip();
+  drawTileMotif(ctx, matX, matY, matW, matH, 0.035);
+  ctx.restore();
+
+  // ===== 2px silver liner — between the cobalt frame and the cream mat =====
+  // This is the "foleado sutil" — adds polished sophistication.
+  const liner = Math.max(2, Math.round(W * 0.0035));
+  ctx.strokeStyle = COLOR.silver;
+  ctx.lineWidth = liner;
+  ctx.strokeRect(
+    matX - liner / 2,
+    matY - liner / 2,
+    matW + liner,
+    matH + liner,
+  );
+
+  // Inner hairline at the silver liner's inside edge for crisp definition
+  ctx.strokeStyle = "rgba(15, 31, 64, 0.35)";
   ctx.lineWidth = 1;
-  ctx.strokeRect(artX - matPad + 0.5, artY - matPad + 0.5, artW + matPad * 2 - 1, artH + matPad * 2 - 1);
+  ctx.strokeRect(matX + 0.5, matY + 0.5, matW - 1, matH - 1);
 
   // ===== Soft drop shadow INSIDE the mat, around the artwork (depth cue) =====
   ctx.save();
@@ -548,18 +574,18 @@ function drawArtwork(ctx, x, y, w, h, entry) {
 
 function drawPlaque(ctx, x, y, w, h, entry) {
   ctx.save();
-  // Bone-white plaque background
-  ctx.fillStyle = COLOR.bone;
+  // Silver-bone plaque background — museum-card feel
+  ctx.fillStyle = COLOR.silverBone;
   roundRectPath(ctx, x, y, w, h, 2);
   ctx.fill();
 
-  // Thin cobalt outline
-  ctx.strokeStyle = COLOR.cobalt;
+  // Thin deep-cobalt outline
+  ctx.strokeStyle = COLOR.cobaltDeep;
   ctx.lineWidth = 1;
   ctx.stroke();
 
   // Top + bottom rule inside, very thin
-  ctx.strokeStyle = "rgba(30, 58, 110, 0.20)";
+  ctx.strokeStyle = "rgba(15, 31, 64, 0.25)";
   ctx.lineWidth = 0.8;
   ctx.beginPath();
   ctx.moveTo(x + 12, y + 6);
@@ -568,7 +594,7 @@ function drawPlaque(ctx, x, y, w, h, entry) {
   ctx.lineTo(x + w - 12, y + h - 6);
   ctx.stroke();
 
-  // ===== Text =====
+  // ===== Text — deep cobalt on silver-bone for high contrast =====
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "center";
 
@@ -579,10 +605,10 @@ function drawPlaque(ctx, x, y, w, h, entry) {
   const title = "GABO FRAGMENTS SOCIETY";
   ctx.fillText(truncateToWidth(ctx, title, w * 0.92), x + w / 2, y + titleSize + Math.round(h * 0.08));
 
-  // Subtitle — fragment metadata (Inter Regular)
+  // Subtitle — fragment metadata (Inter Regular) — deep cobalt
   const subSize = Math.round(h * 0.16);
   ctx.font = `600 ${subSize}px 'Inter', system-ui, sans-serif`;
-  ctx.fillStyle = COLOR.cobalt;
+  ctx.fillStyle = COLOR.cobaltDeep;
   const tier = entry ? entry.tier : null;
   let sub;
   if (!entry) {
@@ -599,7 +625,7 @@ function drawPlaque(ctx, x, y, w, h, entry) {
   // Provenance line — JetBrains Mono for the contract address
   const provSize = Math.round(h * 0.13);
   ctx.font = `500 ${provSize}px 'JetBrains Mono', ui-monospace, monospace`;
-  ctx.fillStyle = COLOR.ink;
+  ctx.fillStyle = COLOR.cobalt;
   const cShort = GABO_FRAGMENTS.contract.slice(0, 6) + "…" + GABO_FRAGMENTS.contract.slice(-4);
   const prov = `APECHAIN · ${cShort}`;
   ctx.fillText(prov, x + w / 2, y + titleSize + Math.round(h * 0.08) + subSize + 6 + provSize + 6);
@@ -668,14 +694,15 @@ function init3D() {
 
   // Modern gallery card material — texture map provides full colors.
   // color MUST be white (multiplier identity) so the map renders as authored.
-  // The cobalt frame border + cream mat are painted into the canvas texture itself.
+  // The cobalt frame body + silver liner + cream mat are painted into the canvas texture itself.
+  // Slight metalness/roughness tweak — refined surface without being shiny.
   frontMaterial = new THREE.MeshPhysicalMaterial({
     map: slabTexture,
     color: 0xffffff,
-    metalness: 0.05,
-    roughness: 0.80,
+    metalness: 0.15,
+    roughness: 0.65,
     clearcoat: 0.0,
-    envMapIntensity: 0.30,
+    envMapIntensity: 0.50,
     side: THREE.FrontSide,
   });
 
@@ -1083,8 +1110,8 @@ async function exportSlabGLB() {
     const mat = new THREE.MeshPhysicalMaterial({
       map: tex,
       color: 0xffffff,
-      metalness: 0.05,
-      roughness: 0.80,
+      metalness: 0.15,
+      roughness: 0.65,
       clearcoat: 0.0,
     });
     mesh = new THREE.Mesh(geom, mat);

@@ -169,13 +169,17 @@ const appChecks = [
   { name: 'frame drawing function', re: /function drawSlabFront/ },
   { name: 'modern plaque drawing (not silver)', re: /function drawPlaque/ },
   { name: 'tile motif helper for cream mat', re: /function drawTileMotif/ },
-  { name: 'cobalt-ink matte material color', re: /color:\s*0x1A1A1A/ },
-  { name: 'matte roughness (>=0.8)', re: /roughness:\s*0\.85/ },
-  { name: 'low metalness (<=0.15)', re: /metalness:\s*0\.10/ },
-  // GFS palette constants in JS
+  // Material: white color multiplier (texture renders as authored — cobalt is in the canvas)
+  { name: 'white material multiplier (color: 0xffffff)', re: /color:\s*0xffffff/ },
+  { name: 'refined surface roughness (0.65)', re: /roughness:\s*0\.65/ },
+  { name: 'refined metalness (0.15)', re: /metalness:\s*0\.15/ },
+  // GFS palette constants in JS — frame body is cobalt (painted into the texture)
   { name: 'COLOR.cobalt constant in JS', re: /cobalt:\s*"#1E3A6E"/ },
   { name: 'COLOR.cream constant in JS', re: /cream:\s*"#F5F1E8"/ },
   { name: 'COLOR.bone constant in JS', re: /bone:\s*"#FFFCF5"/ },
+  // Silver liner — polished silver between cobalt frame and cream mat
+  { name: 'COLOR.silver liner #C0C4CC', re: /silver:\s*"#C0C4CC"/ },
+  { name: 'COLOR.silverBone plaque background', re: /silverBone:\s*"#E8EAEF"/ },
   // Negatives — old ornate frame removed
   { name: 'no drawSilverPlaque (renamed to drawPlaque)', re: /function drawSilverPlaque/, negate: true },
   { name: 'no drawCornerFlourish (ornate removed)', re: /function drawCornerFlourish/, negate: true },

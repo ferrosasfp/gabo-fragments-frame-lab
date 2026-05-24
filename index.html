@@ -67,114 +67,87 @@
     <div class="page">
 
       <!-- =========================================================== -->
-      <!-- MINI HERO                                                    -->
+      <!-- SPLIT HERO — tagline + tool side-by-side (above the fold)   -->
       <!-- =========================================================== -->
-      <section class="hero" aria-label="Frame Lab hero">
-        <h1 class="hero-headline">
-          Frame any<br/><span class="accent">Fragment.</span>
-        </h1>
-        <p class="hero-sub">
-          A community tool to exhibit your Gabo Fragments Society NFT.
-          Pick a token ID, see it in a gallery card, export as PNG, GIF, WebM or GLB.
-        </p>
-        <span class="hero-badge">
-          <span class="dot"></span>
-          Built on ApeChain
-        </span>
-      </section>
+      <section class="split-hero hero" aria-label="Frame Lab">
 
-      <!-- =========================================================== -->
-      <!-- FRAME LAB — the tool                                         -->
-      <!-- =========================================================== -->
-      <section class="lab" aria-label="Frame Lab tool">
-        <div class="section-head">
-          <p class="section-eyebrow">The Tool</p>
-          <h2 class="section-title">Frame Lab</h2>
-        </div>
+        <!-- LEFT: tagline + controls -->
+        <div class="split-hero-left">
+          <h1 class="hero-headline">
+            Frame any<br/><span class="accent">Fragment.</span>
+          </h1>
+          <p class="hero-sub">
+            A community tool to exhibit your Gabo Fragments Society NFT.
+          </p>
 
-        <div class="lab-grid">
-
-          <!-- LEFT: Controls -->
-          <section class="panel" aria-label="Fragment input">
-            <div class="panel-head">
-              <span class="num">1</span>
-              <span class="panel-head-label">Fragment</span>
-            </div>
-
-            <div class="field">
-              <label for="tokenInput">Token ID</label>
-              <div class="token-row">
-                <input
-                  id="tokenInput"
-                  class="input"
-                  type="text"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="0–990"
-                  autocomplete="off"
-                  maxlength="3"
-                />
-                <button id="frameIt" class="btn-icon" title="Random Fragment" aria-label="Pick a random Fragment">
-                  Random
-                </button>
-              </div>
-            </div>
-
-            <div class="field">
-              <button class="btn-cta" id="frameItBtn">
-                <span>Frame It</span>
-              </button>
-            </div>
-
-            <p class="dock-error" id="dockError" hidden></p>
-
-            <div class="tier-info">
-              <div class="tier-label">Fragment Hierarchy</div>
-              <div class="tier-grid">
-                <span class="tier-pill"><span class="tier-k">#0</span> Genesis</span>
-                <span class="tier-pill"><span class="tier-k">1·9</span> Tier 1</span>
-                <span class="tier-pill"><span class="tier-k">10·90</span> Tier 2</span>
-                <span class="tier-pill"><span class="tier-k">91·990</span> Tier 3</span>
-              </div>
-            </div>
-          </section>
-
-          <!-- RIGHT: Stage + exports below -->
-          <div>
-            <section class="card-stage" id="stage" aria-label="Frame preview">
-              <div class="stage-bg" aria-hidden="true"></div>
-
-              <div class="slab-wrap">
-                <canvas id="slabCanvas" class="slab-canvas" aria-label="Gabo Fragments artwork in a gallery card frame"></canvas>
-              </div>
-
-              <div class="stage-loading" id="stageLoading" hidden>
-                <span class="loading-bubble" id="loadingLabel">loading…</span>
-              </div>
-              <div class="stage-toast" id="stageToast" hidden></div>
-            </section>
-
-            <div class="export-row" aria-label="Export formats">
-              <button class="export-btn btn" data-export="slab-png" data-fmt="png">
-                <span class="ico">PNG</span>
-                <span class="meta">Full frame · 2x</span>
-              </button>
-              <button class="export-btn btn" data-export="slab-gif" data-fmt="gif">
-                <span class="ico">GIF</span>
-                <span class="meta">Rotation · 2.5s</span>
-              </button>
-              <button class="export-btn btn" data-export="slab-webm" data-fmt="webm">
-                <span class="ico">WEBM</span>
-                <span class="meta">HD video</span>
-              </button>
-              <button class="export-btn btn" data-export="slab-glb" data-fmt="glb">
-                <span class="ico">GLB</span>
-                <span class="meta">3D · WebXR</span>
+          <div class="field">
+            <label for="tokenInput">Token ID</label>
+            <div class="token-row">
+              <input
+                id="tokenInput"
+                class="input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                placeholder="0–990"
+                autocomplete="off"
+                maxlength="3"
+              />
+              <button id="frameIt" class="btn-icon" title="Random Fragment" aria-label="Pick a random Fragment">
+                Random
               </button>
             </div>
           </div>
 
+          <div class="field">
+            <button class="btn-cta" id="frameItBtn">
+              <span>Frame It</span>
+            </button>
+          </div>
+
+          <div class="export-row" aria-label="Export formats">
+            <button class="export-btn btn" data-export="slab-png" data-fmt="png">
+              <span class="ico">PNG</span>
+              <span class="meta">Full frame · 2x</span>
+            </button>
+            <button class="export-btn btn" data-export="slab-gif" data-fmt="gif">
+              <span class="ico">GIF</span>
+              <span class="meta">Rotation · 2.5s</span>
+            </button>
+            <button class="export-btn btn" data-export="slab-webm" data-fmt="webm">
+              <span class="ico">WEBM</span>
+              <span class="meta">HD video</span>
+            </button>
+            <button class="export-btn btn" data-export="slab-glb" data-fmt="glb">
+              <span class="ico">GLB</span>
+              <span class="meta">3D · WebXR</span>
+            </button>
+          </div>
+
+          <p class="dock-error" id="dockError" hidden></p>
+
+          <span class="hero-badge">
+            <span class="dot"></span>
+            Built on ApeChain
+          </span>
         </div>
+
+        <!-- RIGHT: Stage / 3D renderer -->
+        <div class="split-hero-right">
+          <section class="card-stage" id="stage" aria-label="Frame preview">
+            <div class="stage-bg" aria-hidden="true"></div>
+
+            <div class="slab-wrap">
+              <canvas id="slabCanvas" class="slab-canvas" aria-label="Gabo Fragments artwork in a gallery card frame"></canvas>
+            </div>
+
+            <div class="stage-loading" id="stageLoading" hidden>
+              <span class="loading-bubble" id="loadingLabel">loading…</span>
+            </div>
+            <div class="stage-toast" id="stageToast" hidden></div>
+          </section>
+        </div>
+
       </section>
 
       <!-- =========================================================== -->
@@ -229,6 +202,7 @@
           <p class="section-eyebrow">Origin Story</p>
           <h2 class="section-title">From Lisbon to the Chain</h2>
         </div>
+        <span class="timeline-hint" aria-hidden="true">swipe →</span>
 
         <div class="timeline" role="list">
           <article class="timeline-step" role="listitem">
