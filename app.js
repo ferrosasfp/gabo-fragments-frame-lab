@@ -707,7 +707,11 @@ canvas.addEventListener("webglcontextrestored", () => {
 // When returning to the app after switching away, rAF may have been parked and
 // not auto-resume — force a fresh loop so the canvas is never left frozen.
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && use3D) {
+  if (document.visibilityState === "hidden") {
+    // Tear down the heavy AR model-viewer before backgrounding so it can't
+    // leave the page frozen on return.
+    if (arModal && !arModal.hidden) closeArViewer();
+  } else if (document.visibilityState === "visible" && use3D) {
     stopAutoRotate();
     startAutoRotate();
   }
@@ -1201,6 +1205,11 @@ function launchAr() {
 function closeArViewer() {
   arModal.hidden = true;
   document.body.style.overflow = "";
+  // Fully tear down model-viewer — its WebGL/WebXR context is heavy and, if left
+  // alive across an app-switch, can strand the page frozen on return. It's
+  // recreated fresh next time AR opens.
+  const mv = arModalStage.querySelector("model-viewer");
+  if (mv) mv.remove();
 }
 
 // ============================================================================

@@ -385,6 +385,9 @@ const vj = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'));
 (/webglcontextrestored/.test(app) && /visibilitychange/.test(app)
   ? pass('app.js recovers from WebGL context loss + app backgrounding')
   : fail('app.js recovers from WebGL context loss + app backgrounding'));
+(/mv\.remove\(\)/.test(app)
+  ? pass('app.js tears down model-viewer on close/background (anti-freeze)')
+  : fail('app.js tears down model-viewer on close/background (anti-freeze)'));
 
 // WebXR AR needs these Permissions-Policy features enabled for self — keep a
 // future "security hardening" from silently disabling them and killing AR.
