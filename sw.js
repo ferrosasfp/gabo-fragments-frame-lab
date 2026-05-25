@@ -9,7 +9,7 @@
  *   - CDN (three.js, gif.js, Google Fonts) ............. cache-first on demand
  *   - navigations ...................................... network-first, shell fallback
  */
-const VERSION = "v2";
+const VERSION = "v3";
 const SHELL_CACHE = `gabo-shell-${VERSION}`;
 const RUNTIME_CACHE = `gabo-runtime-${VERSION}`;
 
@@ -53,6 +53,9 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
+  // Only http(s) is cacheable/interceptable — let blob: and data: (e.g. the
+  // on-demand AR model URLs) pass straight through to the browser.
+  if (!req.url.startsWith("http")) return;
 
   // Page navigations: network-first so updates land fast; cached shell offline.
   if (req.mode === "navigate") {

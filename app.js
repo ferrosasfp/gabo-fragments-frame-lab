@@ -16,6 +16,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+import { USDZExporter } from "three/addons/exporters/USDZExporter.js";
 
 // ============================================================================
 // Config — Gabo Fragments Society
@@ -87,6 +88,10 @@ const stageLoading = $("stageLoading");
 const loadingLabel = $("loadingLabel");
 const stageToast   = $("stageToast");
 const dockError    = $("dockError");
+const viewInRoomBtn = $("viewInRoom");
+const arModal       = $("arModal");
+const arModalStage  = $("arModalStage");
+const arClose       = $("arClose");
 const footerYear   = $("footerYear");
 footerYear.textContent = new Date().getFullYear();
 
@@ -1025,6 +1030,116 @@ async function exportSlabGLB() {
 }
 
 // ============================================================================
+// "View in your room" — AR via <model-viewer>
+// ----------------------------------------------------------------------------
+// Android uses model-viewer's built-in WebXR (renders the GLB blob in-page, no
+// model hosting needed). iOS uses AR Quick Look, which needs a USDZ; we pass it
+// as a data: URL so Quick Look can reach it without a backend (an in-page blob:
+// URL is not reliably reachable by the separate Quick Look process).
+// ============================================================================
+const AR_FRAME_WIDTH_M = 0.6;     // real-world width of the framed piece (metres)
+const MODEL_VIEWER_URL =
+  "https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";
+let mvModulePromise = null;       // lazy-loaded @google/model-viewer
+let arAssets = { id: null, glbUrl: null, usdzUrl: null };
+
+function ensureModelViewer() {
+  if (!mvModulePromise) mvModulePromise = import(MODEL_VIEWER_URL);
+  return mvModulePromise;
+}
+
+// The framed-card mesh, scaled to real-world metres for AR. The card texture is
+// downscaled (the full 1200×1680 render is overkill for a phone wall, and the
+// USDZ rides inside a data: URL for iOS Quick Look — keep it small).
+const AR_TEX_MAX = 1024;
+function buildArScene() {
+  const scene = new THREE.Scene();
+  const src = slabTextureCanvas;
+  const f = Math.min(1, AR_TEX_MAX / Math.max(src.width, src.height));
+  const tc = document.createElement("canvas");
+  tc.width = Math.round(src.width * f);
+  tc.height = Math.round(src.height * f);
+  tc.getContext("2d").drawImage(src, 0, 0, tc.width, tc.height);
+
+  const tex = new THREE.CanvasTexture(tc);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  const geom = new RoundedBoxGeometry(SLAB_W, SLAB_H, SLAB_D, 6, 0.012);
+  const mesh = new THREE.Mesh(geom, new THREE.MeshPhysicalMaterial({
+    map: tex, color: 0xffffff, metalness: 0.15, roughness: 0.65,
+  }));
+  mesh.scale.multiplyScalar(AR_FRAME_WIDTH_M / SLAB_W); // scene units -> metres
+  scene.add(mesh);
+  return scene;
+}
+
+function bytesToBase64(data) {
+  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+  let bin = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+
+// Generate (and cache per fragment) the GLB blob URL + USDZ data URL.
+async function buildArAssets(entry) {
+  if (arAssets.id === entry.id && arAssets.glbUrl) return arAssets;
+  if (arAssets.glbUrl) URL.revokeObjectURL(arAssets.glbUrl);
+
+  const glbBuf = await new Promise((resolve, reject) =>
+    new GLTFExporter().parse(buildArScene(), resolve, reject,
+      { binary: true, embedImages: true })
+  );
+  const glbUrl = URL.createObjectURL(new Blob([glbBuf], { type: "model/gltf-binary" }));
+
+  const usdzBuf = await new USDZExporter().parseAsync(buildArScene());
+  const usdzUrl = "data:model/vnd.usdz+zip;base64," + bytesToBase64(usdzBuf);
+
+  arAssets = { id: entry.id, glbUrl, usdzUrl };
+  return arAssets;
+}
+
+async function openArViewer() {
+  const e = requireCurrent();
+  setLoading(true, "preparing AR…");
+  try {
+    await ensureModelViewer();
+    const { glbUrl, usdzUrl } = await buildArAssets(e);
+
+    let mv = arModalStage.querySelector("model-viewer");
+    if (!mv) {
+      mv = document.createElement("model-viewer");
+      mv.setAttribute("camera-controls", "");
+      mv.setAttribute("touch-action", "pan-y");
+      mv.setAttribute("shadow-intensity", "1");
+      mv.setAttribute("ar", "");
+      mv.setAttribute("ar-modes", "webxr quick-look");
+      mv.setAttribute("ar-placement", "wall");
+      mv.setAttribute("ar-scale", "fixed");
+      arModalStage.appendChild(mv);
+    }
+    mv.setAttribute("src", glbUrl);
+    mv.setAttribute("ios-src", usdzUrl);
+    mv.setAttribute("alt", `Gabo Fragment #${e.id} framed, in AR`);
+
+    arModal.hidden = false;
+    document.body.style.overflow = "hidden";
+  } catch (err) {
+    console.error(err);
+    showError("Could not prepare AR: " + (err.message || err));
+  } finally {
+    setLoading(false);
+  }
+}
+
+function closeArViewer() {
+  arModal.hidden = true;
+  document.body.style.overflow = "";
+}
+
+// ============================================================================
 // Load fragment flow
 // ============================================================================
 async function loadFragment(rawId) {
@@ -1074,6 +1189,16 @@ randomBtn.addEventListener("click", () => {
   const id = randomValidId();
   tokenInput.value = id;
   loadFragment(id);
+});
+
+// "View in your room" — AR
+if (viewInRoomBtn) viewInRoomBtn.addEventListener("click", openArViewer);
+if (arClose) arClose.addEventListener("click", closeArViewer);
+if (arModal) arModal.addEventListener("click", (ev) => {
+  if (ev.target === arModal) closeArViewer(); // click on the backdrop closes
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && arModal && !arModal.hidden) closeArViewer();
 });
 
 const exporters = {

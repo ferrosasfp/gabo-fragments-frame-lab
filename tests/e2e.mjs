@@ -348,6 +348,28 @@ const tabCssChecks = [
 ];
 for (const c of tabCssChecks) (c.re.test(cssSrc) ? pass(c.name) : fail(c.name));
 
+console.log('\n[10] "View in your room" — AR (model-viewer + GLB/USDZ)');
+const arHtmlChecks = [
+  { name: 'index has "View in your room" button', re: /id="viewInRoom"/ },
+  { name: 'index has AR modal', re: /id="arModal"/ },
+  { name: 'index has AR modal stage for model-viewer', re: /id="arModalStage"/ },
+];
+for (const c of arHtmlChecks) (c.re.test(html) ? pass(c.name) : fail(c.name));
+
+const arAppChecks = [
+  { name: 'app.js imports USDZExporter', re: /import \{ USDZExporter \}/ },
+  { name: 'app.js lazy-loads model-viewer', re: /@google\/model-viewer/ },
+  { name: 'app.js AR modes webxr + quick-look', re: /"ar-modes",\s*"webxr quick-look"/ },
+  { name: 'app.js places frame on the wall', re: /"ar-placement",\s*"wall"/ },
+  { name: 'app.js GLB as blob URL (Android webxr)', re: /createObjectURL\(new Blob\(\[glbBuf\]/ },
+  { name: 'app.js USDZ as data URL (iOS Quick Look)', re: /data:model\/vnd\.usdz\+zip;base64,/ },
+  { name: 'app.js scales frame to real metres', re: /AR_FRAME_WIDTH_M/ },
+];
+for (const c of arAppChecks) (c.re.test(app) ? pass(c.name) : fail(c.name));
+
+(/connect-src[^;]*blob:/.test(cspVal) ? pass('CSP connect-src allows blob: (AR GLB)') : fail('CSP connect-src allows blob: (AR GLB)'));
+(/req\.url\.startsWith\("http"\)/.test(swSrc) ? pass('sw skips blob:/data: schemes') : fail('sw skips blob:/data: schemes'));
+
 // ===== Summary =====
 const ok = results.filter((r) => r.ok).length;
 const ko = results.filter((r) => !r.ok).length;

@@ -136,6 +136,15 @@
             </button>
           </div>
 
+          <button class="btn-ar" id="viewInRoom" type="button">
+            <svg class="ar-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 2.5 21 7v10l-9 4.5L3 17V7z" />
+              <path d="M3 7l9 4.5L21 7" />
+              <path d="M12 11.5V21.5" />
+            </svg>
+            <span>View in your room</span>
+          </button>
+
           <p class="dock-error" id="dockError" hidden></p>
 
           <span class="hero-badge">
@@ -420,6 +429,23 @@
         <span class="tab-label">Story</span>
       </a>
     </nav>
+
+    <!-- ============================================================== -->
+    <!-- AR MODAL — "View in your room" (model-viewer injected by app.js) -->
+    <!-- ============================================================== -->
+    <div class="ar-modal" id="arModal" hidden role="dialog" aria-modal="true" aria-label="View in your room">
+      <div class="ar-modal-panel">
+        <header class="ar-modal-head">
+          <span class="ar-modal-title">View in your room</span>
+          <button class="ar-close" id="arClose" type="button" aria-label="Close">&#10005;</button>
+        </header>
+        <div class="ar-modal-stage" id="arModalStage"></div>
+        <p class="ar-modal-hint">
+          Tap the cube button to place this framed fragment on your wall.
+          Augmented reality needs a recent phone (iPhone or Android).
+        </p>
+      </div>
+    </div>
 
     <script type="module" src="app.js"></script>
     <script type="module" src="puzzle.js"></script>
