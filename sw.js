@@ -18,6 +18,7 @@ const SHELL = [
   "/index.html",
   "/app.js",
   "/puzzle.js",
+  "/nav.js",
   "/styles.css",
   "/logo.svg",
   "/opensea.svg",

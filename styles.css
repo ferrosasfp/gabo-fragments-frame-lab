@@ -117,8 +117,11 @@ body {
 .nav-links .nav-cta:hover { background: var(--cobalt-bright); color: #fff; }
 @media (max-width: 720px) {
   .nav { padding: 12px 18px; }
-  .nav-links { gap: 14px; }
-  .nav-links a:not(.nav-cta) { display: none; }
+  .nav-links { gap: 16px; }
+  /* Header keeps OpenSea + X as icon-only; the CTA is redundant with the
+     OpenSea icon, and section nav moves to the bottom tab bar. */
+  .nav-links .nav-cta { display: none; }
+  .nav-links a:not(.nav-cta) span { display: none; }
 }
 
 /* ===== Page container ===== */
@@ -1127,4 +1130,60 @@ body {
   .nav { padding: 10px 16px; }
   .footer { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
   .export-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== Mobile tab bar — app-style bottom nav ===== */
+html { scroll-behavior: smooth; }
+section[id] { scroll-margin-top: 76px; }   /* clear the sticky top nav on anchor jumps */
+
+.tabbar { display: none; }   /* desktop: the top nav handles everything */
+
+@media (max-width: 720px) {
+  .tabbar {
+    display: flex;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 60;
+    background: var(--cream);
+    border-top: 1px solid var(--line);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 -2px 12px rgba(15, 31, 64, 0.06);
+    padding-bottom: env(safe-area-inset-bottom, 0px);   /* iOS home indicator */
+  }
+  .tab {
+    position: relative;
+    flex: 1 1 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    padding: 9px 4px 8px;
+    text-decoration: none;
+    color: rgba(15, 31, 64, 0.5);            /* inactive — muted cobalt */
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab-ico { width: 23px; height: 23px; }
+  .tab-label {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .tab.is-active { color: var(--cobalt); }   /* active — full cobalt */
+  .tab.is-active::before {
+    content: "";
+    position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 30px; height: 3px;
+    background: var(--cobalt);
+    border-radius: 0 0 3px 3px;
+  }
+  /* keep the fixed bar from covering content + footer */
+  body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }

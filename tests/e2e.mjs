@@ -29,6 +29,7 @@ const files = [
   { path: 'index.html', min: 5_000 },
   { path: 'app.js',     min: 30_000 },
   { path: 'puzzle.js',  min: 4_000 },
+  { path: 'nav.js',     min: 500 },
   { path: 'styles.css', min: 8_000 },
   { path: 'logo.svg',   min: 600 },
   { path: 'serve.py',   min: 200 },
@@ -322,6 +323,27 @@ const cspVal = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'))
   .headers[0].headers.find((h) => h.key === 'Content-Security-Policy').value;
 (/worker-src 'self'/.test(cspVal) ? pass('CSP worker-src allows self (SW)') : fail('CSP worker-src allows self (SW)'));
 (/manifest-src 'self'/.test(cspVal) ? pass('CSP manifest-src allows self') : fail('CSP manifest-src allows self'));
+
+console.log('\n[9] Mobile tab bar — app-style bottom nav');
+const navSrc = readFileSync(resolve(ROOT, 'nav.js'), 'utf8');
+const tabbarChecks = [
+  { name: 'index has the tab bar', re: /<nav class="tabbar"/ },
+  { name: 'tab bar has 4 tabs', re: /data-section="frame"[\s\S]*data-section="collection"[\s\S]*data-section="puzzle"[\s\S]*data-section="story"/ },
+  { name: 'sections carry anchor ids', re: /id="frame"[\s\S]*id="collection"[\s\S]*id="puzzle"[\s\S]*id="story"/ },
+  { name: 'index loads nav.js', re: /<script type="module" src="nav\.js"/ },
+];
+for (const c of tabbarChecks) (c.re.test(html) ? pass(c.name) : fail(c.name));
+(/IntersectionObserver/.test(navSrc) ? pass('nav.js scroll-spy via IntersectionObserver') : fail('nav.js scroll-spy via IntersectionObserver'));
+(/is-active/.test(navSrc) ? pass('nav.js toggles active tab') : fail('nav.js toggles active tab'));
+
+const cssSrc = readFileSync(resolve(ROOT, 'styles.css'), 'utf8');
+const tabCssChecks = [
+  { name: 'tab bar hidden on desktop', re: /\.tabbar\s*\{\s*display:\s*none/ },
+  { name: 'tab bar fixed to bottom', re: /\.tabbar\s*\{[\s\S]*position:\s*fixed[\s\S]*bottom:\s*0/ },
+  { name: 'iOS safe-area inset honored', re: /env\(safe-area-inset-bottom/ },
+  { name: 'smooth anchor scrolling', re: /scroll-behavior:\s*smooth/ },
+];
+for (const c of tabCssChecks) (c.re.test(cssSrc) ? pass(c.name) : fail(c.name));
 
 // ===== Summary =====
 const ok = results.filter((r) => r.ok).length;

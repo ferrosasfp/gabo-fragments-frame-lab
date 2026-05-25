@@ -81,7 +81,7 @@
       <!-- =========================================================== -->
       <!-- SPLIT HERO: tagline + tool side-by-side (above the fold)   -->
       <!-- =========================================================== -->
-      <section class="split-hero hero" aria-label="Frame Lab">
+      <section id="frame" class="split-hero hero" aria-label="Frame Lab">
 
         <!-- LEFT: tagline + controls -->
         <div class="split-hero-left">
@@ -165,7 +165,7 @@
       <!-- =========================================================== -->
       <!-- FRAGMENT HIERARCHY                                           -->
       <!-- =========================================================== -->
-      <section class="hierarchy" aria-label="Fragment hierarchy">
+      <section id="collection" class="hierarchy" aria-label="Fragment hierarchy">
         <div class="section-head">
           <p class="section-eyebrow">Collection Structure</p>
           <h2 class="section-title">991 Fragments. 1 Artwork.</h2>
@@ -209,7 +209,7 @@
       <!-- =========================================================== -->
       <!-- REASSEMBLE THE GENESIS: sliding puzzle                      -->
       <!-- =========================================================== -->
-      <section class="puzzle-section" aria-label="Reassemble the Genesis puzzle">
+      <section id="puzzle" class="puzzle-section" aria-label="Reassemble the Genesis puzzle">
         <div class="section-head">
           <p class="section-eyebrow">Interactive Puzzle</p>
           <h2 class="section-title">Reassemble the Genesis</h2>
@@ -273,7 +273,7 @@
       <!-- =========================================================== -->
       <!-- FROM LISBON TO THE CHAIN                                     -->
       <!-- =========================================================== -->
-      <section class="timeline-section" aria-label="Origin story">
+      <section id="story" class="timeline-section" aria-label="Origin story">
         <div class="section-head">
           <p class="section-eyebrow">Origin Story</p>
           <h2 class="section-title">From Lisbon to the Chain</h2>
@@ -386,7 +386,43 @@
       </div>
     </footer>
 
+    <!-- ============================================================== -->
+    <!-- MOBILE TAB BAR — app-style bottom nav (hidden on desktop)       -->
+    <!-- ============================================================== -->
+    <nav class="tabbar" aria-label="Sections">
+      <a class="tab" href="#frame" data-section="frame">
+        <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <rect x="7" y="7" width="10" height="10" rx="1" />
+        </svg>
+        <span class="tab-label">Frame</span>
+      </a>
+      <a class="tab" href="#collection" data-section="collection">
+        <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+        <span class="tab-label">Collection</span>
+      </a>
+      <a class="tab" href="#puzzle" data-section="puzzle">
+        <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20.5 11H19V7a2 2 0 0 0-2-2h-4V3.5a2.5 2.5 0 0 0-5 0V5H4a2 2 0 0 0-2 2v3.8h1.5a2.2 2.2 0 1 1 0 4.4H2V19a2 2 0 0 0 2 2h3.8v-1.5a2.2 2.2 0 1 1 4.4 0V21H17a2 2 0 0 0 2-2v-4h1.5a2.5 2.5 0 0 0 0-5Z" />
+        </svg>
+        <span class="tab-label">Puzzle</span>
+      </a>
+      <a class="tab" href="#story" data-section="story">
+        <svg class="tab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 5.5C10.5 4.5 8 4 5.5 4S2 4.5 2 4.5V19s1.5-.5 3.5-.5 4.5 1 6.5 2c2-1 4.5-2 6.5-2s3.5.5 3.5.5V4.5S20.5 4 18.5 4 13.5 4.5 12 5.5Z" />
+          <path d="M12 5.5V21" />
+        </svg>
+        <span class="tab-label">Story</span>
+      </a>
+    </nav>
+
     <script type="module" src="app.js"></script>
     <script type="module" src="puzzle.js"></script>
+    <script type="module" src="nav.js"></script>
   </body>
 </html>
