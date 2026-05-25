@@ -359,9 +359,9 @@ for (const c of arHtmlChecks) (c.re.test(html) ? pass(c.name) : fail(c.name));
 const arAppChecks = [
   { name: 'app.js imports USDZExporter', re: /import \{ USDZExporter \}/ },
   { name: 'app.js lazy-loads model-viewer', re: /@google\/model-viewer/ },
-  { name: 'app.js AR modes scene-viewer + quick-look (native, no in-page webxr)', re: /"ar-modes",\s*"scene-viewer quick-look"/ },
-  { name: 'app.js places frame on the wall', re: /"ar-placement",\s*"wall"/ },
-  { name: 'app.js Android GLB from /ar/<id>.glb endpoint', re: /`\/ar\/\$\{e\.id\}\.glb`/ },
+  { name: 'app.js launches Scene Viewer (ar_preferred, no bounce)', re: /scene-viewer\/1\.0[\s\S]*mode=ar_preferred/ },
+  { name: 'app.js iOS Quick Look via rel=ar anchor', re: /setAttribute\("rel",\s*"ar"\)/ },
+  { name: 'app.js Android GLB from /ar/<id>.glb endpoint', re: /\/ar\/\$\{e\.id\}\.glb`|\/ar\/\$\{id\}\.glb`/ },
   { name: 'app.js USDZ as data URL (iOS Quick Look)', re: /data:model\/vnd\.usdz\+zip;base64,/ },
   { name: 'app.js scales frame to real metres', re: /AR_FRAME_WIDTH_M/ },
 ];

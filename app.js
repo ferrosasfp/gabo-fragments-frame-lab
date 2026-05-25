@@ -92,6 +92,7 @@ const viewInRoomBtn = $("viewInRoom");
 const arModal       = $("arModal");
 const arModalStage  = $("arModalStage");
 const arClose       = $("arClose");
+const arLaunch      = $("arLaunch");
 const footerYear   = $("footerYear");
 footerYear.textContent = new Date().getFullYear();
 
@@ -1076,6 +1077,7 @@ const MODEL_VIEWER_URL =
   "https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";
 let mvModulePromise = null;       // lazy-loaded @google/model-viewer
 let arAssets = { id: null, usdzUrl: null };
+let arCurrent = { id: null, usdzUrl: null }; // what the AR launch button uses
 
 function ensureModelViewer() {
   if (!mvModulePromise) mvModulePromise = import(MODEL_VIEWER_URL);
@@ -1135,25 +1137,22 @@ async function openArViewer() {
   try {
     await ensureModelViewer();
     const usdzUrl = await buildArUsdz(e);
-    const glbUrl = `/ar/${e.id}.glb`; // server-built, Scene-Viewer-fetchable
+    arCurrent = { id: e.id, usdzUrl };
+    const glbUrl = `${location.origin}/ar/${e.id}.glb`; // server-built model
 
+    // model-viewer here is ONLY the in-page 3D preview (no `ar` attribute) —
+    // it loads the exact server model the AR launch will use, confirming it
+    // renders. The AR launch is handled by launchAr() with full control.
     let mv = arModalStage.querySelector("model-viewer");
     if (!mv) {
       mv = document.createElement("model-viewer");
       mv.setAttribute("camera-controls", "");
       mv.setAttribute("touch-action", "pan-y");
       mv.setAttribute("shadow-intensity", "1");
-      mv.setAttribute("ar", "");
-      // Native AR apps only (no in-page WebXR): Scene Viewer on Android, Quick
-      // Look on iOS. They run outside the PWA — proper wall anchoring, no freeze.
-      mv.setAttribute("ar-modes", "scene-viewer quick-look");
-      mv.setAttribute("ar-placement", "wall");
-      mv.setAttribute("ar-scale", "fixed");
       arModalStage.appendChild(mv);
     }
     mv.setAttribute("src", glbUrl);
-    mv.setAttribute("ios-src", usdzUrl);
-    mv.setAttribute("alt", `Gabo Fragment #${e.id} framed, in AR`);
+    mv.setAttribute("alt", `Gabo Fragment #${e.id} framed`);
 
     arModal.hidden = false;
     document.body.style.overflow = "hidden";
@@ -1163,6 +1162,36 @@ async function openArViewer() {
   } finally {
     setLoading(false);
   }
+}
+
+// Launch native AR. Android -> Scene Viewer (mode=ar_preferred so it shows the
+// model and offers AR instead of bouncing straight back). iOS -> AR Quick Look
+// via a rel="ar" anchor pointing at the USDZ.
+function launchAr() {
+  if (arCurrent.id == null) return;
+  const id = arCurrent.id;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (isIOS) {
+    const a = document.createElement("a");
+    a.setAttribute("rel", "ar");
+    a.appendChild(document.createElement("img")); // Quick Look expects a child
+    a.href = arCurrent.usdzUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return;
+  }
+
+  const glb = `${location.origin}/ar/${id}.glb`;
+  const intent =
+    "intent://arvr.google.com/scene-viewer/1.0?file=" + encodeURIComponent(glb) +
+    "&mode=ar_preferred&title=" + encodeURIComponent("Gabo Fragment #" + id) +
+    "#Intent;scheme=https;package=com.google.android.googlequicksearchbox;" +
+    "action=android.intent.action.VIEW;S.browser_fallback_url=" +
+    encodeURIComponent(location.href) + ";end;";
+  window.location.href = intent;
 }
 
 function closeArViewer() {
@@ -1228,6 +1257,7 @@ if ("requestIdleCallback" in window) {
   requestIdleCallback(() => ensureModelViewer().catch(() => {}), { timeout: 5000 });
 }
 if (viewInRoomBtn) viewInRoomBtn.addEventListener("click", openArViewer);
+if (arLaunch) arLaunch.addEventListener("click", launchAr);
 if (arClose) arClose.addEventListener("click", closeArViewer);
 if (arModal) arModal.addEventListener("click", (ev) => {
   if (ev.target === arModal) closeArViewer(); // click on the backdrop closes
