@@ -1144,20 +1144,16 @@ async function openArViewer() {
     arCurrent = { id: e.id, usdzUrl };
     const glbUrl = `${location.origin}/ar/${e.id}.glb`; // server-built model
 
-    // model-viewer is the in-page 3D preview AND the Android AR engine: with
-    // ar-modes "webxr scene-viewer", Android uses WebXR (works where Scene
-    // Viewer is broken). iOS is launched separately via Quick Look (launchAr).
-    // model-viewer's own AR button is hidden (CSS) — our "View in AR" drives it.
+    // model-viewer is ONLY the in-page 3D preview (no `ar` attribute, so no
+    // in-page WebXR — that was the source of the app-switch freeze). AR is
+    // launched natively by launchAr(): Scene Viewer on Android, Quick Look on
+    // iOS — both run OUTSIDE the app, so no freeze and proper wall anchoring.
     let mv = arModalStage.querySelector("model-viewer");
     if (!mv) {
       mv = document.createElement("model-viewer");
       mv.setAttribute("camera-controls", "");
       mv.setAttribute("touch-action", "pan-y");
       mv.setAttribute("shadow-intensity", "1");
-      mv.setAttribute("ar", "");
-      mv.setAttribute("ar-modes", "webxr scene-viewer");
-      mv.setAttribute("ar-placement", "wall");
-      mv.setAttribute("ar-scale", "fixed");
       arModalStage.appendChild(mv);
     }
     mv.setAttribute("src", glbUrl);
@@ -1173,12 +1169,13 @@ async function openArViewer() {
   }
 }
 
-// Launch AR. iOS -> AR Quick Look via a rel="ar" anchor (USDZ data: URL).
-// Android (and others) -> model-viewer's AR, which picks WebXR first, then
-// Scene Viewer. WebXR runs in-page and works where the device's Scene Viewer
-// is broken. Must stay in the click gesture (no await before activateAR).
+// Launch native AR — runs OUTSIDE the app (no in-page WebXR, no freeze).
+// iOS -> AR Quick Look via a rel="ar" anchor (USDZ data: URL).
+// Android -> Scene Viewer intent (mode=ar_preferred shows the model + offers
+// AR instead of bouncing). Works on devices with a healthy Scene Viewer.
 function launchAr() {
   if (arCurrent.id == null) return;
+  const id = arCurrent.id;
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
@@ -1193,13 +1190,14 @@ function launchAr() {
     return;
   }
 
-  const mv = arModalStage.querySelector("model-viewer");
-  if (mv && typeof mv.activateAR === "function") {
-    mv.activateAR().catch((err) => {
-      console.warn("activateAR failed:", err && err.message);
-      showError("AR isn't available on this device/browser.");
-    });
-  }
+  const glb = `${location.origin}/ar/${id}.glb`;
+  const intent =
+    "intent://arvr.google.com/scene-viewer/1.0?file=" + encodeURIComponent(glb) +
+    "&mode=ar_preferred&title=" + encodeURIComponent("Gabo Fragment #" + id) +
+    "#Intent;scheme=https;package=com.google.android.googlequicksearchbox;" +
+    "action=android.intent.action.VIEW;S.browser_fallback_url=" +
+    encodeURIComponent(location.href) + ";end;";
+  window.location.href = intent;
 }
 
 function closeArViewer() {
