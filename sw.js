@@ -9,7 +9,7 @@
  *   - CDN (three.js, gif.js, Google Fonts) ............. cache-first on demand
  *   - navigations ...................................... network-first, shell fallback
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `gabo-shell-${VERSION}`;
 const RUNTIME_CACHE = `gabo-runtime-${VERSION}`;
 
@@ -64,12 +64,25 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else: cache-first (immutable artworks + pinned CDN libs).
   const url = new URL(req.url);
-  const sameOrigin = url.origin === self.location.origin;
-  const isFragment = sameOrigin && url.pathname.startsWith("/fragments/");
-  const cacheName = (sameOrigin && !isFragment) ? SHELL_CACHE : RUNTIME_CACHE;
-  event.respondWith(cacheFirst(req, cacheName));
+
+  // Same-origin: app shell + immutable fragment artworks → cache-first.
+  if (url.origin === self.location.origin) {
+    const isFragment = url.pathname.startsWith("/fragments/");
+    event.respondWith(cacheFirst(req, isFragment ? RUNTIME_CACHE : SHELL_CACHE));
+    return;
+  }
+
+  // Cross-origin: only the pinned jsdelivr CDN is allowed by connect-src, so it
+  // is the only cross-origin we may fetch+cache from here (three.js, gif.js).
+  // Everything else (e.g. Google Fonts) MUST pass through untouched — the
+  // browser loads it under the correct CSP directive (style-src / font-src);
+  // re-fetching it from the SW would be governed by connect-src and get blocked.
+  if (url.hostname === "cdn.jsdelivr.net") {
+    event.respondWith(cacheFirst(req, RUNTIME_CACHE));
+  }
+  // else: no respondWith() → default browser handling (offline degrades to the
+  // system-font fallbacks already declared in the CSS font stacks).
 });
 
 async function cacheFirst(req, cacheName) {
