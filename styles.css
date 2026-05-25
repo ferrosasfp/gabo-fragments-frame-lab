@@ -38,7 +38,12 @@ body {
   background-repeat: repeat;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  /* Clamp horizontal overflow WITHOUT creating a scroll container — `clip`
+     (unlike `hidden`) does not break `position: fixed` for the bottom tab bar
+     on mobile (iOS Safari anchors fixed children to the document otherwise).
+     `hidden` kept as a fallback for pre-2022 browsers. */
   overflow-x: hidden;
+  overflow-x: clip;
   min-height: 100vh;
   position: relative;
 }

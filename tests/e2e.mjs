@@ -342,6 +342,7 @@ const tabCssChecks = [
   { name: 'tab bar fixed to bottom', re: /\.tabbar\s*\{[\s\S]*position:\s*fixed[\s\S]*bottom:\s*0/ },
   { name: 'iOS safe-area inset honored', re: /env\(safe-area-inset-bottom/ },
   { name: 'smooth anchor scrolling', re: /scroll-behavior:\s*smooth/ },
+  { name: 'body uses overflow-x clip (keeps fixed bar pinned on mobile)', re: /overflow-x:\s*clip/ },
 ];
 for (const c of tabCssChecks) (c.re.test(cssSrc) ? pass(c.name) : fail(c.name));
 
