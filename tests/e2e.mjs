@@ -335,6 +335,7 @@ const tabbarChecks = [
 for (const c of tabbarChecks) (c.re.test(html) ? pass(c.name) : fail(c.name));
 (/IntersectionObserver/.test(navSrc) ? pass('nav.js scroll-spy via IntersectionObserver') : fail('nav.js scroll-spy via IntersectionObserver'));
 (/is-active/.test(navSrc) ? pass('nav.js toggles active tab') : fail('nav.js toggles active tab'));
+(/visualViewport/.test(navSrc) ? pass('nav.js pins tab bar above mobile browser chrome') : fail('nav.js pins tab bar above mobile browser chrome'));
 
 const cssSrc = readFileSync(resolve(ROOT, 'styles.css'), 'utf8');
 const tabCssChecks = [

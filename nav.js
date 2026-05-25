@@ -41,3 +41,36 @@
 
   setActive(sections[0].id); // default before first scroll
 })();
+
+/* Pin the tab bar to the VISUAL viewport bottom.
+ *
+ * A position:fixed bottom bar anchors to the LAYOUT viewport, but mobile
+ * browser chrome — notably iOS Safari's bottom address bar — sits below the
+ * visual viewport and overlaps the bar until the user scrolls and the chrome
+ * collapses (the "only half shows" symptom). visualViewport reports the real
+ * visible area, so we offset the bar up by however much chrome covers the
+ * bottom. No-op on desktop and where there's no overlap (e.g. Android, or an
+ * installed standalone PWA with no browser chrome).
+ */
+(() => {
+  const bar = document.querySelector(".tabbar");
+  const vv = window.visualViewport;
+  if (!bar || !vv) return;
+
+  let raf = 0;
+  function pin() {
+    raf = 0;
+    const overlap = window.innerHeight - vv.height - vv.offsetTop;
+    // Apply only for browser-chrome-sized overlaps; ignore the on-screen
+    // keyboard (which would otherwise fling the bar up over the input).
+    bar.style.transform =
+      overlap > 1 && overlap < 160 ? `translateY(${-Math.round(overlap)}px)` : "";
+  }
+  function schedule() {
+    if (!raf) raf = requestAnimationFrame(pin);
+  }
+  vv.addEventListener("resize", schedule);
+  vv.addEventListener("scroll", schedule);
+  window.addEventListener("orientationchange", schedule);
+  pin();
+})();
