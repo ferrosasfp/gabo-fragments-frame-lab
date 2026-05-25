@@ -26,20 +26,32 @@
     }
   }
 
-  // Shrink the observer root to a thin band in the vertical middle of the
-  // viewport; whichever section crosses that band is the active one.
-  const io = new IntersectionObserver(
-    (entries) => {
-      const visible = entries
-        .filter((e) => e.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-      if (visible[0]) setActive(visible[0].target.id);
-    },
-    { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.01, 0.25, 0.5, 1] }
-  );
-  sections.forEach((s) => io.observe(s));
-
-  setActive(sections[0].id); // default before first scroll
+  // Active section = the last one whose top has scrolled past a reference line
+  // ~40% down the viewport. This assigns exactly one active section at every
+  // scroll position regardless of section height — unlike a thin intersection
+  // band, which misses very tall sections (the hero, the puzzle) whose
+  // intersection ratio stays small.
+  let raf = 0;
+  function update() {
+    raf = 0;
+    const ref = window.innerHeight * 0.4;
+    let current = sections[0].id;
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top <= ref) current = s.id;
+    }
+    // At the very bottom of the page, force the last section (it may be too
+    // short to ever reach the reference line).
+    if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 2) {
+      current = sections[sections.length - 1].id;
+    }
+    setActive(current);
+  }
+  function schedule() {
+    if (!raf) raf = requestAnimationFrame(update);
+  }
+  window.addEventListener("scroll", schedule, { passive: true });
+  window.addEventListener("resize", schedule);
+  update(); // initial state
 })();
 
 /* Pin the tab bar to the VISUAL viewport bottom.

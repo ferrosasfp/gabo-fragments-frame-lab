@@ -333,7 +333,8 @@ const tabbarChecks = [
   { name: 'index loads nav.js', re: /<script type="module" src="nav\.js"/ },
 ];
 for (const c of tabbarChecks) (c.re.test(html) ? pass(c.name) : fail(c.name));
-(/IntersectionObserver/.test(navSrc) ? pass('nav.js scroll-spy via IntersectionObserver') : fail('nav.js scroll-spy via IntersectionObserver'));
+(/getBoundingClientRect\(\)\.top/.test(navSrc) && /addEventListener\("scroll"/.test(navSrc)
+  ? pass('nav.js deterministic scroll-spy (reference line)') : fail('nav.js deterministic scroll-spy (reference line)'));
 (/is-active/.test(navSrc) ? pass('nav.js toggles active tab') : fail('nav.js toggles active tab'));
 (/visualViewport/.test(navSrc) ? pass('nav.js pins tab bar above mobile browser chrome') : fail('nav.js pins tab bar above mobile browser chrome'));
 
