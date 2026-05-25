@@ -34,6 +34,12 @@ const files = [
   { path: 'serve.py',   min: 200 },
   { path: 'vercel.json', min: 800 },
   { path: 'README.md',  min: 1_000 },
+  { path: 'sw.js',                  min: 800 },
+  { path: 'manifest.webmanifest',   min: 300 },
+  { path: 'icon-192.png',           min: 1_000 },
+  { path: 'icon-512.png',           min: 1_000 },
+  { path: 'icon-512-maskable.png',  min: 1_000 },
+  { path: 'apple-touch-icon.png',   min: 1_000 },
 ];
 for (const f of files) {
   const p = resolve(ROOT, f.path);
@@ -241,7 +247,7 @@ if (!cspHeader) {
     { name: 'CSP has no unsafe-inline for scripts', re: /script-src[^;]*'unsafe-inline'/, negate: true },
     { name: 'CSP forbids object-src', re: /object-src 'none'/ },
     { name: 'CSP forbids frame-ancestors', re: /frame-ancestors 'none'/ },
-    { name: 'CSP allows worker blob', re: /worker-src blob:/ },
+    { name: 'CSP allows worker self + blob (SW + gif.js)', re: /worker-src 'self' blob:/ },
   ];
   for (const c of cspChecks) {
     const hit = c.re.test(csp);
@@ -279,6 +285,43 @@ for (const c of puzzleChecks) {
   const ok = c.negate ? !hit : hit;
   ok ? pass(c.name) : fail(c.name);
 }
+
+console.log('\n[8] PWA — installable + offline');
+const swSrc = readFileSync(resolve(ROOT, 'sw.js'), 'utf8');
+const manifestSrc = JSON.parse(readFileSync(resolve(ROOT, 'manifest.webmanifest'), 'utf8'));
+const pwaHtmlChecks = [
+  { name: 'index links the web manifest', re: /rel="manifest" href="manifest\.webmanifest"/ },
+  { name: 'index has apple-touch-icon', re: /rel="apple-touch-icon" href="apple-touch-icon\.png"/ },
+  { name: 'index declares apple-mobile-web-app-capable', re: /apple-mobile-web-app-capable/ },
+];
+for (const c of pwaHtmlChecks) (c.re.test(html) ? pass(c.name) : fail(c.name));
+
+// app.js must register the SW (external file — no inline script, keeps CSP strict)
+(/navigator\.serviceWorker\.register\(["']sw\.js["']\)/.test(app)
+  ? pass('app.js registers the service worker') : fail('app.js registers the service worker'));
+
+const swChecks = [
+  { name: 'sw caches the app shell', re: /addAll\(SHELL\)/ },
+  { name: 'sw precaches index + app + styles', re: /["']\/app\.js["'][\s\S]*["']\/styles\.css["']/ },
+  { name: 'sw handles navigations (offline fallback)', re: /req\.mode === "navigate"/ },
+  { name: 'sw cache-first runtime strategy', re: /function cacheFirst/ },
+  { name: 'sw purges old caches on activate', re: /caches\.delete/ },
+];
+for (const c of swChecks) (c.re.test(swSrc) ? pass(c.name) : fail(c.name));
+
+// Manifest content
+(manifestSrc.display === 'standalone' ? pass('manifest display: standalone') : fail('manifest display: standalone'));
+(manifestSrc.start_url === '/' ? pass('manifest start_url: /') : fail('manifest start_url: /'));
+(Array.isArray(manifestSrc.icons) && manifestSrc.icons.some((i) => i.sizes === '512x512' && i.purpose === 'maskable')
+  ? pass('manifest has 512 maskable icon') : fail('manifest has 512 maskable icon'));
+(manifestSrc.icons.some((i) => i.sizes === '192x192')
+  ? pass('manifest has 192 icon') : fail('manifest has 192 icon'));
+
+// CSP must allow the SW (worker-src self) + the manifest (manifest-src self)
+const cspVal = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'))
+  .headers[0].headers.find((h) => h.key === 'Content-Security-Policy').value;
+(/worker-src 'self'/.test(cspVal) ? pass('CSP worker-src allows self (SW)') : fail('CSP worker-src allows self (SW)'));
+(/manifest-src 'self'/.test(cspVal) ? pass('CSP manifest-src allows self') : fail('CSP manifest-src allows self'));
 
 // ===== Summary =====
 const ok = results.filter((r) => r.ok).length;

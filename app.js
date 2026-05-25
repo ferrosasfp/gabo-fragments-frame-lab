@@ -1130,3 +1130,14 @@ exportBtns.forEach((btn) => {
   tokenInput.value = "0";
   loadFragment("0");
 })();
+
+// ============================================================================
+// PWA — register the service worker (installable + offline app shell)
+// ============================================================================
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch((err) => {
+      console.warn("SW registration failed (non-fatal):", err && err.message);
+    });
+  });
+}
