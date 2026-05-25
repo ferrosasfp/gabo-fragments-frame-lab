@@ -9,7 +9,7 @@
  *   - CDN (three.js, gif.js, Google Fonts) ............. cache-first on demand
  *   - navigations ...................................... network-first, shell fallback
  */
-const VERSION = "v4";
+const VERSION = "v5";
 const SHELL_CACHE = `gabo-shell-${VERSION}`;
 const RUNTIME_CACHE = `gabo-runtime-${VERSION}`;
 
@@ -74,8 +74,15 @@ self.addEventListener("fetch", (event) => {
     // Dynamic AR model endpoint → always network (the edge CDN caches it, and
     // Scene Viewer fetches it directly anyway). Don't let the SW touch it.
     if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/ar/")) return;
-    const isFragment = url.pathname.startsWith("/fragments/");
-    event.respondWith(cacheFirst(req, isFragment ? RUNTIME_CACHE : SHELL_CACHE));
+    // Immutable assets (artworks, icons, baked images) → cache-first.
+    if (url.pathname.startsWith("/fragments/") || /\.(webp|png|svg)$/.test(url.pathname)) {
+      event.respondWith(cacheFirst(req, RUNTIME_CACHE));
+      return;
+    }
+    // Code + shell (html/js/css/webmanifest) → network-first, so a new release
+    // reaches users immediately instead of being pinned to a stale cache-first
+    // copy. Falls back to cache only when offline.
+    event.respondWith(networkFirst(req, SHELL_CACHE));
     return;
   }
 
@@ -105,6 +112,23 @@ async function cacheFirst(req, cacheName) {
   } catch (err) {
     const fallback = await caches.match(req);
     if (fallback) return fallback;
+    throw err;
+  }
+}
+
+// Network-first: always try the network (so new releases land), update the
+// cache, and fall back to the cached copy only when offline.
+async function networkFirst(req, cacheName) {
+  try {
+    const res = await fetch(req);
+    if (res && res.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(req, res.clone());
+    }
+    return res;
+  } catch (err) {
+    const cached = await caches.match(req);
+    if (cached) return cached;
     throw err;
   }
 }

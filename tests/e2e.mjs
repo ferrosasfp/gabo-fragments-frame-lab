@@ -306,6 +306,8 @@ const swChecks = [
   { name: 'sw precaches index + app + styles', re: /["']\/app\.js["'][\s\S]*["']\/styles\.css["']/ },
   { name: 'sw handles navigations (offline fallback)', re: /req\.mode === "navigate"/ },
   { name: 'sw cache-first runtime strategy', re: /function cacheFirst/ },
+  { name: 'sw network-first for code (so releases reach users)', re: /function networkFirst/ },
+  { name: 'sw serves code via network-first', re: /networkFirst\(req, SHELL_CACHE\)/ },
   { name: 'sw purges old caches on activate', re: /caches\.delete/ },
 ];
 for (const c of swChecks) (c.re.test(swSrc) ? pass(c.name) : fail(c.name));
