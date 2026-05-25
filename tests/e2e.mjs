@@ -370,6 +370,16 @@ for (const c of arAppChecks) (c.re.test(app) ? pass(c.name) : fail(c.name));
 (/connect-src[^;]*blob:/.test(cspVal) ? pass('CSP connect-src allows blob: (AR GLB)') : fail('CSP connect-src allows blob: (AR GLB)'));
 (/req\.url\.startsWith\("http"\)/.test(swSrc) ? pass('sw skips blob:/data: schemes') : fail('sw skips blob:/data: schemes'));
 
+// WebXR AR needs these Permissions-Policy features enabled for self — keep a
+// future "security hardening" from silently disabling them and killing AR.
+const permPol = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'))
+  .headers[0].headers.find((h) => h.key === 'Permissions-Policy').value;
+for (const feat of ['xr-spatial-tracking', 'camera', 'gyroscope', 'accelerometer']) {
+  (new RegExp(`${feat}=\\(self\\)`).test(permPol)
+    ? pass(`Permissions-Policy allows ${feat} (WebXR AR)`)
+    : fail(`Permissions-Policy allows ${feat} (WebXR AR)`));
+}
+
 // ===== Summary =====
 const ok = results.filter((r) => r.ok).length;
 const ko = results.filter((r) => !r.ok).length;
