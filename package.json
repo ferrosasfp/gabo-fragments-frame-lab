@@ -4,10 +4,15 @@
   "type": "module",
   "description": "Community frame tool for Gabo Fragments Society. Static site + one serverless route that builds per-fragment AR models for Scene Viewer / Quick Look.",
   "scripts": {
-    "test": "node tests/e2e.mjs"
+    "test": "node tests/e2e.mjs && node tests/model.test.mjs",
+    "test:static": "node tests/e2e.mjs",
+    "test:model": "node tests/model.test.mjs"
   },
   "dependencies": {
     "@gltf-transform/core": "^4.1.1",
     "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "gltf-validator": "^2.0.0-dev.3.10"
   }
 }

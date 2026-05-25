@@ -1281,6 +1281,13 @@ section[id] { scroll-margin-top: 76px; }   /* clear the sticky top nav on anchor
 }
 /* Drive AR from our own "View in AR" button, not model-viewer's default one. */
 .ar-modal-stage model-viewer::part(default-ar-button) { display: none; }
+
+/* Desktop (precise pointer that can hover) can't launch native AR — hide the
+   "View in AR" button there. CSS-only, so it holds even if a stale cached
+   script skips app.js's AR_SUPPORTED check. The modal stays a 3D preview. */
+@media (hover: hover) and (pointer: fine) {
+  #arLaunch { display: none !important; }
+}
 .ar-modal-hint {
   margin: 0;
   padding: 12px 18px 16px;

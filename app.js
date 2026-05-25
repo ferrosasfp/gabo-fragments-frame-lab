@@ -1276,11 +1276,9 @@ randomBtn.addEventListener("click", () => {
   loadFragment(id);
 });
 
-// "View in your room" — AR. Pre-warm the model-viewer module on idle so the
-// modal opens fast (the in-AR scan delay itself is ARCore detecting surfaces).
-if ("requestIdleCallback" in window) {
-  requestIdleCallback(() => ensureModelViewer().catch(() => {}), { timeout: 5000 });
-}
+// "View in your room" — AR. model-viewer (~300KB) is loaded lazily only when
+// the modal is opened, so the ~99% of visitors who never open AR don't pay for
+// it (bandwidth matters at viral scale).
 if (viewInRoomBtn) viewInRoomBtn.addEventListener("click", openArViewer);
 if (arLaunch) arLaunch.addEventListener("click", launchAr);
 if (arClose) arClose.addEventListener("click", closeArViewer);
