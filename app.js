@@ -1077,6 +1077,10 @@ async function exportSlabGLB() {
 // generated client-side and passed as a data: URL.
 // ============================================================================
 const AR_FRAME_WIDTH_M = 0.6;     // real-world width of the framed piece (metres)
+// AR only launches on mobile (Scene Viewer / Quick Look). Desktop gets the 3D
+// preview only, so the "View in AR" button is hidden there.
+const AR_SUPPORTED = /iPad|iPhone|iPod|Android/.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 const MODEL_VIEWER_URL =
   "https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";
 let mvModulePromise = null;       // lazy-loaded @google/model-viewer
@@ -1158,6 +1162,16 @@ async function openArViewer() {
     }
     mv.setAttribute("src", glbUrl);
     mv.setAttribute("alt", `Gabo Fragment #${e.id} framed`);
+
+    // AR launches only on mobile — hide the button (and adjust the hint) on
+    // desktop, where the modal is a 3D preview only.
+    arLaunch.hidden = !AR_SUPPORTED;
+    const hint = arModal.querySelector(".ar-modal-hint");
+    if (hint) {
+      hint.textContent = AR_SUPPORTED
+        ? 'Drag to preview in 3D. Tap "View in AR" to place this framed fragment on your wall.'
+        : "Drag to spin the 3D preview. Open this page on your phone (iPhone or Android) to place it on your wall in AR.";
+    }
 
     arModal.hidden = false;
     document.body.style.overflow = "hidden";

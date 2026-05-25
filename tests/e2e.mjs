@@ -361,6 +361,7 @@ const arAppChecks = [
   { name: 'app.js lazy-loads model-viewer', re: /@google\/model-viewer/ },
   { name: 'app.js Android native Scene Viewer (ar_preferred, runs outside app)', re: /scene-viewer\/1\.0[\s\S]*mode=ar_preferred/ },
   { name: 'app.js iOS Quick Look via rel=ar anchor', re: /setAttribute\("rel",\s*"ar"\)/ },
+  { name: 'app.js hides View in AR on desktop (no AR support)', re: /AR_SUPPORTED[\s\S]*arLaunch\.hidden\s*=\s*!AR_SUPPORTED/ },
   { name: 'app.js Android GLB from /ar/<id>.glb endpoint', re: /\/ar\/\$\{e\.id\}\.glb`|\/ar\/\$\{id\}\.glb`/ },
   { name: 'app.js USDZ as data URL (iOS Quick Look)', re: /data:model\/vnd\.usdz\+zip;base64,/ },
   { name: 'app.js scales frame to real metres', re: /AR_FRAME_WIDTH_M/ },
