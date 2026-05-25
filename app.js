@@ -9,8 +9,8 @@
  *   - Frame WebM (MediaRecorder on canvas.captureStream)
  *   - Frame GLB  (GLTFExporter of the whole scene incl. artwork texture)
  *
- * Data: OpenSea API v2 for ApeChain. Falls back to ApeChain RPC + IPFS
- * gateway race if OpenSea is unavailable / rate-limited.
+ * Data: pre-baked static assets (fragments/<id>.webp + manifest.json),
+ * generated once by scripts/build-manifest.py. No runtime RPC or IPFS.
  */
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
@@ -27,14 +27,8 @@ const GABO_FRAGMENTS = {
   chainId: 33139,
   minId: 0,
   maxId: 990,
-  rpc: "https://rpc.apechain.com/http",
-  gateways: [
-    // Only direct-serve gateways with CORS. dweb.link, nftstorage.link, w3s.link
-    // redirect to {CID}.ipfs.subdomain which breaks crossOrigin="anonymous" used
-    // by canvas/three.js — the browser can't trust the redirect for CORS.
-    "https://ipfs.io/ipfs",
-    "https://gateway.pinata.cloud/ipfs",
-  ],
+  // Artwork is served from pre-baked static assets (fragments/<id>.webp).
+  // The provenance (ApeChain RPC + IPFS) lives in scripts/build-manifest.py.
 };
 
 window.GABO_FRAGMENTS = GABO_FRAGMENTS; // expose for tests / debugging
@@ -148,23 +142,8 @@ footerYear.textContent = new Date().getFullYear();
 // State
 // ============================================================================
 const cache = new Map();
-const LS_PREFIX = "gabo-frag-cache-v1::";
 let current = null;
 let errorTimer = null, toastTimer = null;
-
-// Restore cached metadata from localStorage (image still has to be re-fetched
-// each session, but metadata is cheap to keep around).
-function loadMetaFromLS(id) {
-  try {
-    const v = localStorage.getItem(LS_PREFIX + id);
-    return v ? JSON.parse(v) : null;
-  } catch { return null; }
-}
-function saveMetaToLS(id, meta) {
-  try {
-    localStorage.setItem(LS_PREFIX + id, JSON.stringify(meta));
-  } catch { /* quota — non-fatal */ }
-}
 
 // ============================================================================
 // UI helpers
@@ -203,109 +182,28 @@ function canvasToBlob(c, type = "image/png", quality) {
 }
 
 // ============================================================================
-// Data layer — OpenSea API v2 with IPFS gateway race fallback
+// Data layer — pre-baked static assets
+// ----------------------------------------------------------------------------
+// The collection is immutable and finite (991 fragments). Every artwork was
+// pre-baked to fragments/<id>.webp by scripts/build-manifest.py, so the runtime
+// path is a single same-origin, edge-cached image load: no per-user ApeChain
+// RPC call, no IPFS gateway race. manifest.json is the catalog/source-of-truth
+// (name + traits per token); the render path needs only id + tier, both derived
+// locally, so the front does not download it.
 // ============================================================================
 function fetchImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    img.crossOrigin = "anonymous"; // same-origin now, but keep canvas-safe explicitly
     img.addEventListener("load", () => resolve(img));
     img.addEventListener("error", () => reject(new Error("image load failed: " + url)));
     img.src = url;
   });
 }
 
-// Rewrite ipfs://CID[/path] to a list of HTTPS gateway URLs.
-function ipfsToGatewayUrls(ipfsUri) {
-  const cidPath = String(ipfsUri).replace(/^ipfs:\/\//, "").replace(/^\/ipfs\//, "");
-  return GABO_FRAGMENTS.gateways.map((gw) => `${gw}/${cidPath}`);
-}
-
-// Race an image across multiple URLs; resolve with the first one that loads.
-function raceImageUrls(urls) {
-  return new Promise((resolve, reject) => {
-    if (!urls.length) return reject(new Error("No image URLs to race"));
-    const imgs = urls.map(() => { const img = new Image(); img.crossOrigin = "anonymous"; return img; });
-    let resolved = false, errored = 0;
-    urls.forEach((u, i) => {
-      imgs[i].addEventListener("load", () => {
-        if (resolved) return;
-        resolved = true;
-        imgs.forEach((other, j) => { if (j !== i) other.src = ""; });
-        resolve({ image: imgs[i], url: u });
-      });
-      imgs[i].addEventListener("error", () => {
-        errored++;
-        if (errored === urls.length && !resolved) reject(new Error("All image URLs failed"));
-      });
-      imgs[i].src = u;
-    });
-  });
-}
-
-// Read tokenURI(uint256) directly from ApeChain RPC, then resolve metadata
-// + image via the IPFS gateway race. This is the only data path (OpenSea API
-// requires a key, so it is not used).
-async function fetchFromRpc(tokenId) {
-  // tokenURI(uint256) selector = 0xc87b56dd
-  const idHex = BigInt(tokenId).toString(16).padStart(64, "0");
-  const data = "0xc87b56dd" + idHex;
-  const body = {
-    jsonrpc: "2.0",
-    id: 1,
-    method: "eth_call",
-    params: [{ to: GABO_FRAGMENTS.contract, data }, "latest"],
-  };
-  const r = await fetch(GABO_FRAGMENTS.rpc, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!r.ok) throw new Error(`ApeChain RPC HTTP ${r.status}`);
-  const json = await r.json();
-  if (json.error) throw new Error(`RPC: ${json.error.message || "unknown"}`);
-  const result = json.result || "";
-  if (!result || result === "0x") throw new Error("tokenURI returned empty");
-
-  // ABI-decode dynamic string
-  const decoded = decodeAbiString(result);
-  if (!decoded) throw new Error("Could not decode tokenURI");
-
-  // tokenURI may be data: URI, ipfs:// URI, or https://
-  let metaText;
-  if (decoded.startsWith("data:application/json;base64,")) {
-    metaText = atob(decoded.slice("data:application/json;base64,".length));
-  } else if (decoded.startsWith("data:application/json,")) {
-    metaText = decodeURIComponent(decoded.slice("data:application/json,".length));
-  } else if (decoded.startsWith("ipfs://")) {
-    const urls = ipfsToGatewayUrls(decoded);
-    const winner = await Promise.any(urls.map((u) =>
-      fetch(u).then((r2) => { if (!r2.ok) throw new Error(String(r2.status)); return r2.text(); })
-    ));
-    metaText = winner;
-  } else if (decoded.startsWith("http")) {
-    const r2 = await fetch(decoded);
-    if (!r2.ok) throw new Error(`tokenURI HTTP ${r2.status}`);
-    metaText = await r2.text();
-  } else {
-    throw new Error("Unknown tokenURI scheme: " + decoded.slice(0, 40));
-  }
-  return JSON.parse(metaText);
-}
-
-function decodeAbiString(hex) {
-  if (!hex.startsWith("0x")) return null;
-  const buf = hex.slice(2);
-  // offset (32 bytes), length (32 bytes), then data padded to 32 bytes
-  if (buf.length < 128) return null;
-  const len = parseInt(buf.slice(64, 128), 16);
-  if (!Number.isFinite(len) || len <= 0) return null;
-  const dataHex = buf.slice(128, 128 + len * 2);
-  try {
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) bytes[i] = parseInt(dataHex.slice(i * 2, i * 2 + 2), 16);
-    return new TextDecoder().decode(bytes);
-  } catch { return null; }
+// Static path to a pre-baked fragment artwork.
+function fragmentImageUrl(tokenId) {
+  return `fragments/${tokenId}.webp`;
 }
 
 async function fetchFragment(id) {
@@ -313,58 +211,27 @@ async function fetchFragment(id) {
   if (cache.has(tokenId)) return cache.get(tokenId);
   const t0 = performance.now();
 
-  // Try in-memory + localStorage cache first
-  let meta = loadMetaFromLS(tokenId);
-  let fromCache = !!meta;
-
-  if (!meta) {
-    // Direct path: ApeChain RPC + IPFS race (OpenSea API requires key, skipping it).
-    try {
-      const rpcMeta = await fetchFromRpc(tokenId);
-      meta = {
-        identifier: tokenId,
-        name: rpcMeta.name || `Gabo Fragment #${tokenId}`,
-        description: rpcMeta.description || "",
-        image_url: rpcMeta.image || rpcMeta.image_url || "",
-        metadata_url: "",
-        traits: (rpcMeta.attributes || []).map((a) => ({
-          trait_type: a.trait_type, value: a.value,
-        })),
-        _via: "rpc",
-      };
-    } catch (rpcErr) {
-      throw new Error(`ApeChain RPC failed for #${tokenId}: ${rpcErr.message}`);
-    }
-    saveMetaToLS(tokenId, meta);
-  }
-
-  // Resolve image — handle https, ipfs://, opensea CDN
+  const imageURL = fragmentImageUrl(tokenId);
   let image;
-  let imageURL = String(meta.image_url || "");
-
-  if (!imageURL) throw new Error(`No image_url for fragment #${tokenId}`);
-
   try {
-    if (imageURL.startsWith("ipfs://")) {
-      const urls = ipfsToGatewayUrls(imageURL);
-      const winner = await raceImageUrls(urls);
-      image = winner.image;
-      imageURL = winner.url;
-    } else {
-      image = await fetchImage(imageURL);
-    }
+    image = await fetchImage(imageURL);
   } catch (imgErr) {
-    throw new Error(`Image load failed for #${tokenId}: ${imgErr.message}`);
+    throw new Error(`Fragment #${tokenId} artwork not found: ${imgErr.message}`);
   }
 
   const t1 = performance.now();
   const entry = {
     id: tokenId,
-    metadata: meta,
+    metadata: {
+      identifier: tokenId,
+      name: `Gabo Fragment #${tokenId}`,
+      image_url: imageURL,
+      _via: "static",
+    },
     imageURL,
     image,
     tier: fragmentTier(tokenId),
-    fromCache,
+    fromCache: false,
     loadMs: Math.round(t1 - t0),
   };
   cache.set(tokenId, entry);

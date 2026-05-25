@@ -6,8 +6,8 @@
  *   - all required files exist + non-trivial size
  *   - HTML references real local assets (no broken links)
  *   - GFS brand sections (mini hero, fragment hierarchy, Lisbon timeline) are present
- *   - vercel.json CSP allowlists OpenSea + at least one IPFS gateway + Google Fonts
- *   - app.js exposes the canonical Gabo constants (contract, range, gateways)
+ *   - vercel.json CSP is locked to self + jsdelivr + Google Fonts (no runtime RPC/IPFS)
+ *   - app.js exposes the canonical Gabo constants (contract, range) + static data path
  *   - logo.svg parses as XML
  *
  * For a full browser e2e (DOM, three.js render, downloads), spin up the dev
@@ -62,7 +62,8 @@ const htmlChecks = [
   { name: 'loads app.js module', re: /<script type="module" src="app\.js"/ },
   { name: 'loads styles.css', re: /href="styles\.css"/ },
   { name: 'importmap for three', re: /three@0\.160\.0/ },
-  { name: 'preconnect ApeChain RPC', re: /preconnect" href="https:\/\/rpc\.apechain\.com"/ },
+  { name: 'preconnect jsdelivr CDN', re: /preconnect" href="https:\/\/cdn\.jsdelivr\.net"/ },
+  { name: 'no dead RPC preconnect', re: /preconnect" href="https:\/\/rpc\.apechain\.com"/, negate: true },
   { name: 'non-affiliation disclaimer', re: /[Nn]ot affiliated/ },
   { name: 'Google Fonts loads Anton', re: /family=Anton/ },
   { name: 'Google Fonts loads Inter', re: /family=Inter/ },
@@ -176,12 +177,13 @@ const appChecks = [
   { name: 'chainId 33139', re: /chainId:\s*33139/ },
   { name: 'maxId 990 (991 pieces)', re: /maxId:\s*990/ },
   { name: 'minId 0 (Genesis)', re: /minId:\s*0/ },
-  { name: 'ApeChain RPC base', re: /rpc:\s*"https:\/\/rpc\.apechain\.com\/http"/ },
-  { name: 'IPFS gateways defined', re: /gateway\.pinata\.cloud\/ipfs/ },
   { name: 'fragmentTier function', re: /function fragmentTier\(/ },
   { name: 'Genesis tier handled', re: /tier:\s*0,\s*label:\s*"Genesis"/ },
   { name: 'Tier 3 = 900 pieces', re: /tier:\s*3,\s*label:\s*"Tier 3",\s*total:\s*900/ },
-  { name: 'RPC fetcher is the data path', re: /async function fetchFromRpc/ },
+  { name: 'static fragment image path', re: /fragments\/\$\{tokenId\}\.webp/ },
+  { name: 'fetchFragment is the data path', re: /async function fetchFragment/ },
+  { name: 'no runtime RPC fetcher', re: /fetchFromRpc/, negate: true },
+  { name: 'no runtime IPFS gateway race', re: /raceImageUrls/, negate: true },
   { name: 'no dead OpenSea fetcher', re: /fetchOpenSea/, negate: true },
   { name: 'GLB export', re: /async function exportSlabGLB/ },
   { name: 'GIF export', re: /async function exportSlabGIF/ },
@@ -227,9 +229,10 @@ if (!cspHeader) {
   pass('CSP header present');
   const csp = cspHeader.value;
   const cspChecks = [
-    { name: 'CSP includes Pinata gateway', re: /gateway\.pinata\.cloud/ },
-    { name: 'CSP includes ipfs.io gateway', re: /ipfs\.io/ },
-    { name: 'CSP includes ApeChain RPC', re: /rpc\.apechain\.com/ },
+    { name: 'CSP img-src self (pre-baked fragments)', re: /img-src 'self'/ },
+    { name: 'CSP dropped IPFS gateway (now static)', re: /gateway\.pinata\.cloud/, negate: true },
+    { name: 'CSP dropped ipfs.io (now static)', re: /ipfs\.io/, negate: true },
+    { name: 'CSP dropped ApeChain RPC (now static)', re: /rpc\.apechain\.com/, negate: true },
     { name: 'CSP dropped dead OpenSea domain', re: /api\.opensea\.io/, negate: true },
     { name: 'CSP dropped dead seadn.io domain', re: /seadn\.io/, negate: true },
     { name: 'CSP dropped dead dweb.link domain', re: /dweb\.link/, negate: true },
