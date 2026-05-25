@@ -348,6 +348,56 @@ const tabCssChecks = [
 ];
 for (const c of tabCssChecks) (c.re.test(cssSrc) ? pass(c.name) : fail(c.name));
 
+console.log('\n[10] "View in your room" — AR (model-viewer + GLB/USDZ)');
+const arHtmlChecks = [
+  { name: 'index has "View in your room" button', re: /id="viewInRoom"/ },
+  { name: 'index has AR modal', re: /id="arModal"/ },
+  { name: 'index has AR modal stage for model-viewer', re: /id="arModalStage"/ },
+];
+for (const c of arHtmlChecks) (c.re.test(html) ? pass(c.name) : fail(c.name));
+
+const arAppChecks = [
+  { name: 'app.js imports USDZExporter', re: /import \{ USDZExporter \}/ },
+  { name: 'app.js lazy-loads model-viewer', re: /@google\/model-viewer/ },
+  { name: 'app.js Android native Scene Viewer (ar_preferred, runs outside app)', re: /scene-viewer\/1\.0[\s\S]*mode=ar_preferred/ },
+  { name: 'app.js iOS Quick Look via rel=ar anchor', re: /setAttribute\("rel",\s*"ar"\)/ },
+  { name: 'app.js Android GLB from /ar/<id>.glb endpoint', re: /\/ar\/\$\{e\.id\}\.glb`|\/ar\/\$\{id\}\.glb`/ },
+  { name: 'app.js USDZ as data URL (iOS Quick Look)', re: /data:model\/vnd\.usdz\+zip;base64,/ },
+  { name: 'app.js scales frame to real metres', re: /AR_FRAME_WIDTH_M/ },
+];
+for (const c of arAppChecks) (c.re.test(app) ? pass(c.name) : fail(c.name));
+
+// Serverless model endpoint (Scene Viewer downloads the GLB from a URL)
+(existsSync(resolve(ROOT, 'api/model/[id].js'))
+  ? pass('serverless route api/model/[id].js exists') : fail('serverless route api/model/[id].js exists'));
+const pkg = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'));
+(pkg.dependencies && pkg.dependencies['@gltf-transform/core']
+  ? pass('package.json has @gltf-transform/core') : fail('package.json has @gltf-transform/core'));
+(pkg.dependencies && pkg.dependencies.sharp
+  ? pass('package.json has sharp') : fail('package.json has sharp'));
+const vj = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'));
+(Array.isArray(vj.rewrites) && vj.rewrites.some((r) => /\/ar\/:id\.glb/.test(r.source))
+  ? pass('vercel.json rewrites /ar/:id.glb -> model route') : fail('vercel.json rewrites /ar/:id.glb -> model route'));
+
+(/connect-src[^;]*blob:/.test(cspVal) ? pass('CSP connect-src allows blob: (AR GLB)') : fail('CSP connect-src allows blob: (AR GLB)'));
+(/req\.url\.startsWith\("http"\)/.test(swSrc) ? pass('sw skips blob:/data: schemes') : fail('sw skips blob:/data: schemes'));
+(/webglcontextrestored/.test(app) && /visibilitychange/.test(app)
+  ? pass('app.js recovers from WebGL context loss + app backgrounding')
+  : fail('app.js recovers from WebGL context loss + app backgrounding'));
+(/mv\.remove\(\)/.test(app)
+  ? pass('app.js tears down model-viewer on close/background (anti-freeze)')
+  : fail('app.js tears down model-viewer on close/background (anti-freeze)'));
+
+// WebXR AR needs these Permissions-Policy features enabled for self — keep a
+// future "security hardening" from silently disabling them and killing AR.
+const permPol = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'))
+  .headers[0].headers.find((h) => h.key === 'Permissions-Policy').value;
+for (const feat of ['xr-spatial-tracking', 'camera', 'gyroscope', 'accelerometer']) {
+  (new RegExp(`${feat}=\\(self\\)`).test(permPol)
+    ? pass(`Permissions-Policy allows ${feat} (WebXR AR)`)
+    : fail(`Permissions-Policy allows ${feat} (WebXR AR)`));
+}
+
 // ===== Summary =====
 const ok = results.filter((r) => r.ok).length;
 const ko = results.filter((r) => !r.ok).length;

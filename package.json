@@ -1,0 +1,13 @@
+{
+  "name": "gabo-fragments-frame-lab",
+  "private": true,
+  "type": "module",
+  "description": "Community frame tool for Gabo Fragments Society. Static site + one serverless route that builds per-fragment AR models for Scene Viewer / Quick Look.",
+  "scripts": {
+    "test": "node tests/e2e.mjs"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "^4.1.1",
+    "sharp": "^0.33.5"
+  }
+}

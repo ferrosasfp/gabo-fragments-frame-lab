@@ -16,6 +16,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
+import { USDZExporter } from "three/addons/exporters/USDZExporter.js";
 
 // ============================================================================
 // Config — Gabo Fragments Society
@@ -87,6 +88,11 @@ const stageLoading = $("stageLoading");
 const loadingLabel = $("loadingLabel");
 const stageToast   = $("stageToast");
 const dockError    = $("dockError");
+const viewInRoomBtn = $("viewInRoom");
+const arModal       = $("arModal");
+const arModalStage  = $("arModalStage");
+const arClose       = $("arClose");
+const arLaunch      = $("arLaunch");
 const footerYear   = $("footerYear");
 footerYear.textContent = new Date().getFullYear();
 
@@ -540,6 +546,7 @@ function truncateToWidth(ctx, text, maxW) {
 let renderer, scene, camera;
 let slabMesh, frontMaterial, slabTextureCanvas, slabTexture;
 let rafId = null;
+let contextLost = false;
 let manualRotation = false;
 let manualRot = { x: 0, y: 0 };
 let use3D = false;
@@ -652,18 +659,25 @@ function startAutoRotate() {
   const start = performance.now();
   function tick(now) {
     const t = (now - start) * 0.001;
-    if (use3D) {
-      if (manualRotation) {
-        slabMesh.rotation.x = manualRot.x;
-        slabMesh.rotation.y = manualRot.y;
-      } else {
-        // Slow, dignified rotation — like a hanging card catching light
-        slabMesh.rotation.y = Math.sin(t * 0.45) * 0.22;
-        slabMesh.rotation.x = Math.cos(t * 0.33) * 0.04;
+    // Wrapped so a lost WebGL context (mobile drops the GPU when the app is
+    // backgrounded, especially after AR) can't throw and kill the loop — the
+    // loop survives and resumes rendering once the context is restored.
+    try {
+      if (use3D && !contextLost) {
+        if (manualRotation) {
+          slabMesh.rotation.x = manualRot.x;
+          slabMesh.rotation.y = manualRot.y;
+        } else {
+          // Slow, dignified rotation — like a hanging card catching light
+          slabMesh.rotation.y = Math.sin(t * 0.45) * 0.22;
+          slabMesh.rotation.x = Math.cos(t * 0.33) * 0.04;
+        }
+        renderer.render(scene, camera);
+      } else if (!use3D) {
+        render2DPreview(t);
       }
-      renderer.render(scene, camera);
-    } else {
-      render2DPreview(t);
+    } catch (_err) {
+      /* keep the loop alive; context-restore handler recovers rendering */
     }
     rafId = requestAnimationFrame(tick);
   }
@@ -673,6 +687,35 @@ function startAutoRotate() {
 function stopAutoRotate() {
   if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
 }
+
+// --- Resilience: recover from WebGL context loss + app backgrounding ---------
+// Mobile browsers drop the WebGL context when the PWA is sent to the background
+// (more so after a GPU-heavy AR session). Without this, the canvas freezes and
+// the render loop dies — the app looks hung until you force-close it.
+canvas.addEventListener("webglcontextlost", (e) => {
+  e.preventDefault();      // REQUIRED so 'restored' can fire later
+  contextLost = true;
+}, false);
+canvas.addEventListener("webglcontextrestored", () => {
+  contextLost = false;
+  if (slabTexture) slabTexture.needsUpdate = true; // force GPU re-upload
+  resize();
+  stopAutoRotate();
+  startAutoRotate();
+}, false);
+
+// When returning to the app after switching away, rAF may have been parked and
+// not auto-resume — force a fresh loop so the canvas is never left frozen.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    // Tear down the heavy AR model-viewer before backgrounding so it can't
+    // leave the page frozen on return.
+    if (arModal && !arModal.hidden) closeArViewer();
+  } else if (document.visibilityState === "visible" && use3D) {
+    stopAutoRotate();
+    startAutoRotate();
+  }
+});
 
 function rerenderSlabTexture() {
   drawSlabFront(slabTextureCanvas, current);
@@ -1025,6 +1068,149 @@ async function exportSlabGLB() {
 }
 
 // ============================================================================
+// "View in your room" — AR via <model-viewer> + native AR apps
+// ----------------------------------------------------------------------------
+// AR runs in the OS-native apps (Android Scene Viewer, iOS Quick Look), which
+// anchor to walls properly and run OUTSIDE the PWA (no WebGL contention / freeze
+// like the in-page WebXR path had). Scene Viewer downloads the GLB from a real
+// URL (/ar/<id>.glb, built by the serverless route); Quick Look reads the USDZ
+// generated client-side and passed as a data: URL.
+// ============================================================================
+const AR_FRAME_WIDTH_M = 0.6;     // real-world width of the framed piece (metres)
+const MODEL_VIEWER_URL =
+  "https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";
+let mvModulePromise = null;       // lazy-loaded @google/model-viewer
+let arAssets = { id: null, usdzUrl: null };
+let arCurrent = { id: null, usdzUrl: null }; // what the AR launch button uses
+
+function ensureModelViewer() {
+  if (!mvModulePromise) mvModulePromise = import(MODEL_VIEWER_URL);
+  return mvModulePromise;
+}
+
+// The framed-card mesh, scaled to real-world metres for AR. The card texture is
+// downscaled (the full 1200×1680 render is overkill for a phone wall, and the
+// USDZ rides inside a data: URL for iOS Quick Look — keep it small).
+const AR_TEX_MAX = 1024;
+function buildArScene() {
+  const scene = new THREE.Scene();
+  const src = slabTextureCanvas;
+  const f = Math.min(1, AR_TEX_MAX / Math.max(src.width, src.height));
+  const tc = document.createElement("canvas");
+  tc.width = Math.round(src.width * f);
+  tc.height = Math.round(src.height * f);
+  tc.getContext("2d").drawImage(src, 0, 0, tc.width, tc.height);
+
+  const tex = new THREE.CanvasTexture(tc);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.needsUpdate = true;
+  const geom = new RoundedBoxGeometry(SLAB_W, SLAB_H, SLAB_D, 6, 0.012);
+  const mesh = new THREE.Mesh(geom, new THREE.MeshPhysicalMaterial({
+    map: tex, color: 0xffffff, metalness: 0.15, roughness: 0.65,
+  }));
+  mesh.scale.multiplyScalar(AR_FRAME_WIDTH_M / SLAB_W); // scene units -> metres
+  scene.add(mesh);
+  return scene;
+}
+
+function bytesToBase64(data) {
+  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+  let bin = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
+}
+
+// iOS Quick Look needs a USDZ; we generate it client-side and pass it as a
+// data: URL (Quick Look can read data:, but not an in-page blob:). Android's
+// GLB instead comes from the /ar/<id>.glb serverless route, because Scene
+// Viewer is a separate app that downloads the model from a real URL.
+async function buildArUsdz(entry) {
+  if (arAssets.id === entry.id && arAssets.usdzUrl) return arAssets.usdzUrl;
+  const usdzBuf = await new USDZExporter().parse(buildArScene());
+  const usdzUrl = "data:model/vnd.usdz+zip;base64," + bytesToBase64(usdzBuf);
+  arAssets = { id: entry.id, usdzUrl };
+  return usdzUrl;
+}
+
+async function openArViewer() {
+  const e = requireCurrent();
+  setLoading(true, "preparing AR…");
+  try {
+    await ensureModelViewer();
+    const usdzUrl = await buildArUsdz(e);
+    arCurrent = { id: e.id, usdzUrl };
+    const glbUrl = `${location.origin}/ar/${e.id}.glb`; // server-built model
+
+    // model-viewer is ONLY the in-page 3D preview (no `ar` attribute, so no
+    // in-page WebXR — that was the source of the app-switch freeze). AR is
+    // launched natively by launchAr(): Scene Viewer on Android, Quick Look on
+    // iOS — both run OUTSIDE the app, so no freeze and proper wall anchoring.
+    let mv = arModalStage.querySelector("model-viewer");
+    if (!mv) {
+      mv = document.createElement("model-viewer");
+      mv.setAttribute("camera-controls", "");
+      mv.setAttribute("touch-action", "pan-y");
+      mv.setAttribute("shadow-intensity", "1");
+      arModalStage.appendChild(mv);
+    }
+    mv.setAttribute("src", glbUrl);
+    mv.setAttribute("alt", `Gabo Fragment #${e.id} framed`);
+
+    arModal.hidden = false;
+    document.body.style.overflow = "hidden";
+  } catch (err) {
+    console.error(err);
+    showError("Could not prepare AR: " + (err.message || err));
+  } finally {
+    setLoading(false);
+  }
+}
+
+// Launch native AR — runs OUTSIDE the app (no in-page WebXR, no freeze).
+// iOS -> AR Quick Look via a rel="ar" anchor (USDZ data: URL).
+// Android -> Scene Viewer intent (mode=ar_preferred shows the model + offers
+// AR instead of bouncing). Works on devices with a healthy Scene Viewer.
+function launchAr() {
+  if (arCurrent.id == null) return;
+  const id = arCurrent.id;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (isIOS) {
+    const a = document.createElement("a");
+    a.setAttribute("rel", "ar");
+    a.appendChild(document.createElement("img")); // Quick Look expects a child
+    a.href = arCurrent.usdzUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return;
+  }
+
+  const glb = `${location.origin}/ar/${id}.glb`;
+  const intent =
+    "intent://arvr.google.com/scene-viewer/1.0?file=" + encodeURIComponent(glb) +
+    "&mode=ar_preferred&title=" + encodeURIComponent("Gabo Fragment #" + id) +
+    "#Intent;scheme=https;package=com.google.android.googlequicksearchbox;" +
+    "action=android.intent.action.VIEW;S.browser_fallback_url=" +
+    encodeURIComponent(location.href) + ";end;";
+  window.location.href = intent;
+}
+
+function closeArViewer() {
+  arModal.hidden = true;
+  document.body.style.overflow = "";
+  // Fully tear down model-viewer — its WebGL/WebXR context is heavy and, if left
+  // alive across an app-switch, can strand the page frozen on return. It's
+  // recreated fresh next time AR opens.
+  const mv = arModalStage.querySelector("model-viewer");
+  if (mv) mv.remove();
+}
+
+// ============================================================================
 // Load fragment flow
 // ============================================================================
 async function loadFragment(rawId) {
@@ -1074,6 +1260,21 @@ randomBtn.addEventListener("click", () => {
   const id = randomValidId();
   tokenInput.value = id;
   loadFragment(id);
+});
+
+// "View in your room" — AR. Pre-warm the model-viewer module on idle so the
+// modal opens fast (the in-AR scan delay itself is ARCore detecting surfaces).
+if ("requestIdleCallback" in window) {
+  requestIdleCallback(() => ensureModelViewer().catch(() => {}), { timeout: 5000 });
+}
+if (viewInRoomBtn) viewInRoomBtn.addEventListener("click", openArViewer);
+if (arLaunch) arLaunch.addEventListener("click", launchAr);
+if (arClose) arClose.addEventListener("click", closeArViewer);
+if (arModal) arModal.addEventListener("click", (ev) => {
+  if (ev.target === arModal) closeArViewer(); // click on the backdrop closes
+});
+document.addEventListener("keydown", (ev) => {
+  if (ev.key === "Escape" && arModal && !arModal.hidden) closeArViewer();
 });
 
 const exporters = {

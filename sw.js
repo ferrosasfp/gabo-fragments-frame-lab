@@ -9,7 +9,7 @@
  *   - CDN (three.js, gif.js, Google Fonts) ............. cache-first on demand
  *   - navigations ...................................... network-first, shell fallback
  */
-const VERSION = "v2";
+const VERSION = "v4";
 const SHELL_CACHE = `gabo-shell-${VERSION}`;
 const RUNTIME_CACHE = `gabo-runtime-${VERSION}`;
 
@@ -53,6 +53,9 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
+  // Only http(s) is cacheable/interceptable — let blob: and data: (e.g. the
+  // on-demand AR model URLs) pass straight through to the browser.
+  if (!req.url.startsWith("http")) return;
 
   // Page navigations: network-first so updates land fast; cached shell offline.
   if (req.mode === "navigate") {
@@ -66,8 +69,11 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // Same-origin: app shell + immutable fragment artworks → cache-first.
+  // Same-origin.
   if (url.origin === self.location.origin) {
+    // Dynamic AR model endpoint → always network (the edge CDN caches it, and
+    // Scene Viewer fetches it directly anyway). Don't let the SW touch it.
+    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/ar/")) return;
     const isFragment = url.pathname.startsWith("/fragments/");
     event.respondWith(cacheFirst(req, isFragment ? RUNTIME_CACHE : SHELL_CACHE));
     return;
