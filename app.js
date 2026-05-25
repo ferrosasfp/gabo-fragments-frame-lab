@@ -1063,18 +1063,19 @@ async function exportSlabGLB() {
 }
 
 // ============================================================================
-// "View in your room" — AR via <model-viewer>
+// "View in your room" — AR via <model-viewer> + native AR apps
 // ----------------------------------------------------------------------------
-// Android uses model-viewer's built-in WebXR (renders the GLB blob in-page, no
-// model hosting needed). iOS uses AR Quick Look, which needs a USDZ; we pass it
-// as a data: URL so Quick Look can reach it without a backend (an in-page blob:
-// URL is not reliably reachable by the separate Quick Look process).
+// AR runs in the OS-native apps (Android Scene Viewer, iOS Quick Look), which
+// anchor to walls properly and run OUTSIDE the PWA (no WebGL contention / freeze
+// like the in-page WebXR path had). Scene Viewer downloads the GLB from a real
+// URL (/ar/<id>.glb, built by the serverless route); Quick Look reads the USDZ
+// generated client-side and passed as a data: URL.
 // ============================================================================
 const AR_FRAME_WIDTH_M = 0.6;     // real-world width of the framed piece (metres)
 const MODEL_VIEWER_URL =
   "https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";
 let mvModulePromise = null;       // lazy-loaded @google/model-viewer
-let arAssets = { id: null, glbUrl: null, usdzUrl: null };
+let arAssets = { id: null, usdzUrl: null };
 
 function ensureModelViewer() {
   if (!mvModulePromise) mvModulePromise = import(MODEL_VIEWER_URL);
@@ -1116,22 +1117,16 @@ function bytesToBase64(data) {
   return btoa(bin);
 }
 
-// Generate (and cache per fragment) the GLB blob URL + USDZ data URL.
-async function buildArAssets(entry) {
-  if (arAssets.id === entry.id && arAssets.glbUrl) return arAssets;
-  if (arAssets.glbUrl) URL.revokeObjectURL(arAssets.glbUrl);
-
-  const glbBuf = await new Promise((resolve, reject) =>
-    new GLTFExporter().parse(buildArScene(), resolve, reject,
-      { binary: true, embedImages: true })
-  );
-  const glbUrl = URL.createObjectURL(new Blob([glbBuf], { type: "model/gltf-binary" }));
-
+// iOS Quick Look needs a USDZ; we generate it client-side and pass it as a
+// data: URL (Quick Look can read data:, but not an in-page blob:). Android's
+// GLB instead comes from the /ar/<id>.glb serverless route, because Scene
+// Viewer is a separate app that downloads the model from a real URL.
+async function buildArUsdz(entry) {
+  if (arAssets.id === entry.id && arAssets.usdzUrl) return arAssets.usdzUrl;
   const usdzBuf = await new USDZExporter().parse(buildArScene());
   const usdzUrl = "data:model/vnd.usdz+zip;base64," + bytesToBase64(usdzBuf);
-
-  arAssets = { id: entry.id, glbUrl, usdzUrl };
-  return arAssets;
+  arAssets = { id: entry.id, usdzUrl };
+  return usdzUrl;
 }
 
 async function openArViewer() {
@@ -1139,7 +1134,8 @@ async function openArViewer() {
   setLoading(true, "preparing AR…");
   try {
     await ensureModelViewer();
-    const { glbUrl, usdzUrl } = await buildArAssets(e);
+    const usdzUrl = await buildArUsdz(e);
+    const glbUrl = `/ar/${e.id}.glb`; // server-built, Scene-Viewer-fetchable
 
     let mv = arModalStage.querySelector("model-viewer");
     if (!mv) {
@@ -1148,7 +1144,9 @@ async function openArViewer() {
       mv.setAttribute("touch-action", "pan-y");
       mv.setAttribute("shadow-intensity", "1");
       mv.setAttribute("ar", "");
-      mv.setAttribute("ar-modes", "webxr quick-look");
+      // Native AR apps only (no in-page WebXR): Scene Viewer on Android, Quick
+      // Look on iOS. They run outside the PWA — proper wall anchoring, no freeze.
+      mv.setAttribute("ar-modes", "scene-viewer quick-look");
       mv.setAttribute("ar-placement", "wall");
       mv.setAttribute("ar-scale", "fixed");
       arModalStage.appendChild(mv);

@@ -359,13 +359,25 @@ for (const c of arHtmlChecks) (c.re.test(html) ? pass(c.name) : fail(c.name));
 const arAppChecks = [
   { name: 'app.js imports USDZExporter', re: /import \{ USDZExporter \}/ },
   { name: 'app.js lazy-loads model-viewer', re: /@google\/model-viewer/ },
-  { name: 'app.js AR modes webxr + quick-look', re: /"ar-modes",\s*"webxr quick-look"/ },
+  { name: 'app.js AR modes scene-viewer + quick-look (native, no in-page webxr)', re: /"ar-modes",\s*"scene-viewer quick-look"/ },
   { name: 'app.js places frame on the wall', re: /"ar-placement",\s*"wall"/ },
-  { name: 'app.js GLB as blob URL (Android webxr)', re: /createObjectURL\(new Blob\(\[glbBuf\]/ },
+  { name: 'app.js Android GLB from /ar/<id>.glb endpoint', re: /`\/ar\/\$\{e\.id\}\.glb`/ },
   { name: 'app.js USDZ as data URL (iOS Quick Look)', re: /data:model\/vnd\.usdz\+zip;base64,/ },
   { name: 'app.js scales frame to real metres', re: /AR_FRAME_WIDTH_M/ },
 ];
 for (const c of arAppChecks) (c.re.test(app) ? pass(c.name) : fail(c.name));
+
+// Serverless model endpoint (Scene Viewer downloads the GLB from a URL)
+(existsSync(resolve(ROOT, 'api/model/[id].js'))
+  ? pass('serverless route api/model/[id].js exists') : fail('serverless route api/model/[id].js exists'));
+const pkg = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'));
+(pkg.dependencies && pkg.dependencies['@gltf-transform/core']
+  ? pass('package.json has @gltf-transform/core') : fail('package.json has @gltf-transform/core'));
+(pkg.dependencies && pkg.dependencies.sharp
+  ? pass('package.json has sharp') : fail('package.json has sharp'));
+const vj = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'));
+(Array.isArray(vj.rewrites) && vj.rewrites.some((r) => /\/ar\/:id\.glb/.test(r.source))
+  ? pass('vercel.json rewrites /ar/:id.glb -> model route') : fail('vercel.json rewrites /ar/:id.glb -> model route'));
 
 (/connect-src[^;]*blob:/.test(cspVal) ? pass('CSP connect-src allows blob: (AR GLB)') : fail('CSP connect-src allows blob: (AR GLB)'));
 (/req\.url\.startsWith\("http"\)/.test(swSrc) ? pass('sw skips blob:/data: schemes') : fail('sw skips blob:/data: schemes'));
