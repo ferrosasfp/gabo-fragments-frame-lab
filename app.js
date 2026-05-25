@@ -1094,7 +1094,7 @@ async function buildArAssets(entry) {
   );
   const glbUrl = URL.createObjectURL(new Blob([glbBuf], { type: "model/gltf-binary" }));
 
-  const usdzBuf = await new USDZExporter().parseAsync(buildArScene());
+  const usdzBuf = await new USDZExporter().parse(buildArScene());
   const usdzUrl = "data:model/vnd.usdz+zip;base64," + bytesToBase64(usdzBuf);
 
   arAssets = { id: entry.id, glbUrl, usdzUrl };
