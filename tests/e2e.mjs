@@ -391,15 +391,46 @@ const vj = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'));
   ? pass('app.js tears down model-viewer on close/background (anti-freeze)')
   : fail('app.js tears down model-viewer on close/background (anti-freeze)'));
 
-// WebXR AR needs these Permissions-Policy features enabled for self — keep a
-// future "security hardening" from silently disabling them and killing AR.
+// AR is now native (Scene Viewer / Quick Look run outside the page), so the
+// page needs NO camera/sensor/xr permissions — they stay locked down. Keep a
+// regression from silently re-granting them.
 const permPol = JSON.parse(readFileSync(resolve(ROOT, 'vercel.json'), 'utf8'))
   .headers[0].headers.find((h) => h.key === 'Permissions-Policy').value;
-for (const feat of ['xr-spatial-tracking', 'camera', 'gyroscope', 'accelerometer']) {
-  (new RegExp(`${feat}=\\(self\\)`).test(permPol)
-    ? pass(`Permissions-Policy allows ${feat} (WebXR AR)`)
-    : fail(`Permissions-Policy allows ${feat} (WebXR AR)`));
+for (const feat of ['xr-spatial-tracking', 'camera', 'gyroscope', 'accelerometer', 'microphone', 'geolocation']) {
+  (new RegExp(`${feat}=\\(\\)`).test(permPol)
+    ? pass(`Permissions-Policy locks ${feat}`)
+    : fail(`Permissions-Policy locks ${feat}`));
 }
+
+console.log('\n[11] Hardening + performance');
+// Security: serverless SSRF guard + extracted, testable model builder
+const modelRoute = readFileSync(resolve(ROOT, 'api/model/[id].js'), 'utf8');
+(/process\.env\.VERCEL_URL/.test(modelRoute)
+  ? pass('model route uses VERCEL_URL (SSRF guard, not client Host header)')
+  : fail('model route uses VERCEL_URL (SSRF guard, not client Host header)'));
+(!/x-forwarded-host/.test(modelRoute)
+  ? pass('model route no longer trusts x-forwarded-host')
+  : fail('model route no longer trusts x-forwarded-host'));
+(existsSync(resolve(ROOT, 'api/_lib/build-glb.js'))
+  ? pass('GLB builder extracted to a unit-testable module')
+  : fail('GLB builder extracted to a unit-testable module'));
+(/import \{ buildFragmentGlb \}/.test(modelRoute)
+  ? pass('model route delegates to build-glb module') : fail('model route delegates to build-glb module'));
+
+// Security: AR is native now → camera/sensor perms stay locked (asserted above too)
+(!/xr-spatial-tracking=\(self\)/.test(permPol)
+  ? pass('no leftover xr-spatial-tracking grant') : fail('no leftover xr-spatial-tracking grant'));
+
+// Perf: three.js modulepreload + lazy model-viewer
+(/rel="modulepreload"[^>]*three\.module\.min\.js/.test(html)
+  ? pass('three.js modulepreload (parallel core fetch)') : fail('three.js modulepreload (parallel core fetch)'));
+(!/requestIdleCallback\([^)]*ensureModelViewer/.test(app)
+  ? pass('model-viewer not idle-prewarmed (saves ~300KB for non-AR visitors)')
+  : fail('model-viewer not idle-prewarmed (saves ~300KB for non-AR visitors)'));
+
+// Robustness: desktop hides the AR launch button via CSS too (cache-proof)
+(/@media \(hover: hover\) and \(pointer: fine\)[\s\S]*#arLaunch/.test(cssSrc)
+  ? pass('desktop hides View-in-AR via CSS fallback') : fail('desktop hides View-in-AR via CSS fallback'));
 
 // ===== Summary =====
 const ok = results.filter((r) => r.ok).length;
