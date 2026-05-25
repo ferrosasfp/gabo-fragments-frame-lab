@@ -545,6 +545,7 @@ function truncateToWidth(ctx, text, maxW) {
 let renderer, scene, camera;
 let slabMesh, frontMaterial, slabTextureCanvas, slabTexture;
 let rafId = null;
+let contextLost = false;
 let manualRotation = false;
 let manualRot = { x: 0, y: 0 };
 let use3D = false;
@@ -657,18 +658,25 @@ function startAutoRotate() {
   const start = performance.now();
   function tick(now) {
     const t = (now - start) * 0.001;
-    if (use3D) {
-      if (manualRotation) {
-        slabMesh.rotation.x = manualRot.x;
-        slabMesh.rotation.y = manualRot.y;
-      } else {
-        // Slow, dignified rotation — like a hanging card catching light
-        slabMesh.rotation.y = Math.sin(t * 0.45) * 0.22;
-        slabMesh.rotation.x = Math.cos(t * 0.33) * 0.04;
+    // Wrapped so a lost WebGL context (mobile drops the GPU when the app is
+    // backgrounded, especially after AR) can't throw and kill the loop — the
+    // loop survives and resumes rendering once the context is restored.
+    try {
+      if (use3D && !contextLost) {
+        if (manualRotation) {
+          slabMesh.rotation.x = manualRot.x;
+          slabMesh.rotation.y = manualRot.y;
+        } else {
+          // Slow, dignified rotation — like a hanging card catching light
+          slabMesh.rotation.y = Math.sin(t * 0.45) * 0.22;
+          slabMesh.rotation.x = Math.cos(t * 0.33) * 0.04;
+        }
+        renderer.render(scene, camera);
+      } else if (!use3D) {
+        render2DPreview(t);
       }
-      renderer.render(scene, camera);
-    } else {
-      render2DPreview(t);
+    } catch (_err) {
+      /* keep the loop alive; context-restore handler recovers rendering */
     }
     rafId = requestAnimationFrame(tick);
   }
@@ -678,6 +686,31 @@ function startAutoRotate() {
 function stopAutoRotate() {
   if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
 }
+
+// --- Resilience: recover from WebGL context loss + app backgrounding ---------
+// Mobile browsers drop the WebGL context when the PWA is sent to the background
+// (more so after a GPU-heavy AR session). Without this, the canvas freezes and
+// the render loop dies — the app looks hung until you force-close it.
+canvas.addEventListener("webglcontextlost", (e) => {
+  e.preventDefault();      // REQUIRED so 'restored' can fire later
+  contextLost = true;
+}, false);
+canvas.addEventListener("webglcontextrestored", () => {
+  contextLost = false;
+  if (slabTexture) slabTexture.needsUpdate = true; // force GPU re-upload
+  resize();
+  stopAutoRotate();
+  startAutoRotate();
+}, false);
+
+// When returning to the app after switching away, rAF may have been parked and
+// not auto-resume — force a fresh loop so the canvas is never left frozen.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && use3D) {
+    stopAutoRotate();
+    startAutoRotate();
+  }
+});
 
 function rerenderSlabTexture() {
   drawSlabFront(slabTextureCanvas, current);
@@ -1191,7 +1224,11 @@ randomBtn.addEventListener("click", () => {
   loadFragment(id);
 });
 
-// "View in your room" — AR
+// "View in your room" — AR. Pre-warm the model-viewer module on idle so the
+// modal opens fast (the in-AR scan delay itself is ARCore detecting surfaces).
+if ("requestIdleCallback" in window) {
+  requestIdleCallback(() => ensureModelViewer().catch(() => {}), { timeout: 5000 });
+}
 if (viewInRoomBtn) viewInRoomBtn.addEventListener("click", openArViewer);
 if (arClose) arClose.addEventListener("click", closeArViewer);
 if (arModal) arModal.addEventListener("click", (ev) => {

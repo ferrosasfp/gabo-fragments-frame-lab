@@ -369,6 +369,9 @@ for (const c of arAppChecks) (c.re.test(app) ? pass(c.name) : fail(c.name));
 
 (/connect-src[^;]*blob:/.test(cspVal) ? pass('CSP connect-src allows blob: (AR GLB)') : fail('CSP connect-src allows blob: (AR GLB)'));
 (/req\.url\.startsWith\("http"\)/.test(swSrc) ? pass('sw skips blob:/data: schemes') : fail('sw skips blob:/data: schemes'));
+(/webglcontextrestored/.test(app) && /visibilitychange/.test(app)
+  ? pass('app.js recovers from WebGL context loss + app backgrounding')
+  : fail('app.js recovers from WebGL context loss + app backgrounding'));
 
 // WebXR AR needs these Permissions-Policy features enabled for self — keep a
 // future "security hardening" from silently disabling them and killing AR.
